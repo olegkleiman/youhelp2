@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+ 	android:background="@color/black"
+ 	android:divider="@drawable/h_divider"
+ 	android:showDividers="middle"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="10dp"
+        android:orientation="horizontal" >
+
+        <LinearLayout
+            android:focusable="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+	        
+		   	<TextView
+		   	    android:id="@+id/txtUserFirstName"
+		   	    android:layout_width="fill_parent"
+		   	    android:layout_height="wrap_content"
+		   	    android:layout_gravity="center"
+		   	    android:layout_weight="1"
+		   	    android:textAppearance="?android:attr/textAppearanceLarge"
+		   	    android:textColor="@color/white" />
+		        
+		   <TextView
+		       android:id="@+id/txtUserLastName"
+		       android:layout_width="fill_parent"
+		       android:layout_height="wrap_content"
+		       android:layout_gravity="center"
+		       android:layout_weight="1"
+		       android:textAppearance="?android:attr/textAppearanceLarge"
+		       android:textColor="@color/white" />
+		        
+        </LinearLayout>
+
+        <!-- Dummy item to prevent AutoCompleteTextView from receiving focus -->
+		<LinearLayout
+		    android:focusable="true" 
+		    android:focusableInTouchMode="true"
+		    android:layout_width="0px" 
+		    android:layout_height="0px"/>
+        
+        <ImageView
+	        android:id="@+id/userProfilePicture"
+	        android:layout_width="128dp"
+	        android:layout_height="128dp"
+	        android:layout_gravity="center_horizontal"
+	        android:layout_marginBottom="10dp"
+	        android:layout_marginLeft="18dp"
+	        android:layout_marginRight="10dp"
+	        android:layout_marginTop="10dp"
+	        android:adjustViewBounds="true"
+	        android:contentDescription="@string/desc_ProfilePicture"
+	        android:gravity="center_horizontal"
+	        android:nextFocusUp="@id/userProfilePicture" 
+	        android:nextFocusLeft="@id/userProfilePicture"
+	        android:scaleType="fitXY" />
+    
+   	</LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="18dp"
+        android:layout_marginTop="18dp"
+        android:orientation="horizontal" >
+
+        <TextView
+            android:id="@+id/textView1"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="10dp"
+            android:gravity="center"
+            android:text="@string/YourPhoneNumber"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="@color/white" />
+
+        <EditText
+            android:id="@+id/txtPhoneNumber"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_vertical"
+            android:gravity="center"
+            android:ems="10"
+            android:inputType="phone"
+            android:textColor="@color/white" >
+
+        </EditText>
+
+    </LinearLayout>
+    
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" 
+        android:layout_marginTop="18dp"
+        android:layout_marginBottom="18dp"
+        android:orientation="horizontal">
+        
+         <TextView
+             android:id="@+id/textViewSwitch1"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:layout_marginLeft="10dp"
+             android:text="@string/AllowSendPhone"
+             android:textAppearance="?android:attr/textAppearanceMedium"
+             android:textColor="@color/white" />
+        
+	     <Switch
+	         android:id="@+id/switchAllowPhoneSend"
+	         android:layout_width="wrap_content"
+	         android:layout_height="match_parent"
+	         android:layout_marginLeft="18dp"
+	         android:checked="true" />
+	     
+ 	</LinearLayout>
+</LinearLayout>

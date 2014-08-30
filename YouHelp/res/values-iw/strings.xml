@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="YourPhoneNumber">מספר טלפון שלך</string>
+    <string name="PrimarySOSNumber">מספר ראשי למקרה חרום</string>
+    <string name="SecondarySOSNumber">מספר משני</string>
+    <string name="AllowSendPhone">אפשר לשלוח מספר זה עם הודעות</string>
+</resources>
