@@ -30,7 +30,7 @@ class PlacesAutoCompleteAdapter extends ArrayAdapter<FoundPlace> implements Filt
 	
 	private ArrayList<FoundPlace> resultList;
 
-	private static final String LOG_TAG = "ExampleApp";
+	private static final String LOG_TAG = "com.anonym.youhelp.placeautocompleteadapter";
 
 	private static final String PLACES_API_BASE = "https://maps.googleapis.com/maps/api/place";
 	private static final String TYPE_AUTOCOMPLETE = "/autocomplete";
@@ -64,6 +64,7 @@ class PlacesAutoCompleteAdapter extends ArrayAdapter<FoundPlace> implements Filt
     	View row = convertView;
     	PlaceHolder holder = null;
     	
+    	try{
     	if(row == null){
 	    	LayoutInflater inflater = ((Activity)context).getLayoutInflater();
 	    	row = inflater.inflate(layoutResourceId, parent, false);
@@ -81,6 +82,11 @@ class PlacesAutoCompleteAdapter extends ArrayAdapter<FoundPlace> implements Filt
     	
     	FoundPlace place = this.getItem(position);
     	holder.txtView.setText(place.getDescription());
+    	}
+    	catch(Exception ex) {
+    		String msg = ex.getMessage();
+    		Log.e(LOG_TAG, msg);
+    	}
     	
     	return row;
     }
