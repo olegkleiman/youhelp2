@@ -21,13 +21,16 @@
     <string name="image_flattire_desc">Flat tire</string>
     <string name="image_jampercable_desc">Jamper Cable</string>
     <string name="image_helpother_desc">Other Help</string>
+    <string name="image_send_desc">Send</string>
     <string name="title_activity_ride">RideActivity</string>
     <string name="title_activity_settings">SettingsActivity</string>
     <string name="title_activity_map">MapActivity</string>
     <string name="desc_ProfilePicture">desc_ProfilePicture</string>
-    
     <string name="YourPhoneNumber">Your Phone Number:</string>
     <string name="PrimarySOSNumber">Primary SOS Phone Number</string>
-	<string name="SecondarySOSNumber">Secondary number</string>
-	<string name="AllowSendPhone">Allow on send:</string>
+    <string name="SecondarySOSNumber">Secondary number</string>
+    <string name="AllowSendPhone">Allow on send:</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="title_activity_hazard">HazardActivity</string>
+	<string name="your_message">Your Message:</string>
 </resources>

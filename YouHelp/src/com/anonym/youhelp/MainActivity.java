@@ -92,6 +92,43 @@ public class MainActivity extends FragmentActivity implements AnimationListener 
 			}
         	
         });
+        
+        final ImageView imageFaltTire = (ImageView)findViewById(R.id.imageViewFaltTire);
+        imageFaltTire.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+
+				Intent intent = new Intent(MainActivity.this, HazardActivity.class);
+				startActivity(intent);
+				
+			}
+        	
+        });
+        
+        final ImageView imageHelpOther = (ImageView)findViewById(R.id.imageViewHelpOther);
+        imageHelpOther.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+
+				Intent intent = new Intent(MainActivity.this, HazardActivity.class);
+				startActivity(intent);
+				
+			}
+        });
+        
+        
+        final ImageView imageJamperCable = (ImageView)findViewById(R.id.imageViewJamperCable);
+        imageJamperCable.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+
+				Intent intent = new Intent(MainActivity.this, HazardActivity.class);
+				startActivity(intent);
+				
+			}
+        });
+        
     }
     
     @Override

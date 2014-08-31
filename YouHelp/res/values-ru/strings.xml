@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="image_send_desc">отправить</string>
+    
     <string name="YourPhoneNumber">Ваш номер телефона</string>
     <string name="PrimarySOSNumber">Основной номер для экстренных звонков</string>
     <string name="SecondarySOSNumber">Дополнительный номер для экстренных звонков</string>
     <string name="AllowSendPhone">Разрешить отправку этого номера с сообщениями</string>
+    <string name="your_message">Ваше сообщение:</string>
 </resources>
 
