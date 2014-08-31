@@ -51,61 +51,58 @@ private class CallDirections extends AsyncTask<String, //the type of the paramet
 		     
 		    ArrayList<LatLng> directionPoint = this.getDirection(doc); 
 		     
-		PolylineOptions rectLine = new PolylineOptions().width(9).color(Color.BLUE); 
-		for(int i = 0 ; i < directionPoint.size() ; i++) {           
-		rectLine.add(directionPoint.get(i)); 
-		} 
-		     
-		gMap.addPolyline(rectLine); 
+			PolylineOptions rectLine = new PolylineOptions().width(9).color(Color.BLUE); 
+			for(int i = 0 ; i < directionPoint.size() ; i++) {           
+			rectLine.add(directionPoint.get(i)); 
+			} 
+			     
+			gMap.addPolyline(rectLine); 
 		       
 		} catch (ParserConfigurationException e) { 
-		// TODO Auto-generated catch block 
 		e.printStackTrace(); 
 		} catch (SAXException e) { 
-		// TODO Auto-generated catch block 
 		e.printStackTrace(); 
 		} catch (IOException e) { 
-		// TODO Auto-generated catch block 
 		e.printStackTrace(); 
 		} 
   
-}	 
+	}	 
  
-@Override 
-protected String doInBackground(String... params) { 
+	@Override 
+	protected String doInBackground(String... params) { 
+	 
+		HttpURLConnection conn = null; 
+	 
+		try { 
+		 
+			String strURL = params[0]; 
+			URL url = new URL(strURL); 
+			conn = (HttpURLConnection) url.openConnection(); 
+			InputStreamReader in = new InputStreamReader(conn.getInputStream()); 
+			 
+			StringBuilder results = new StringBuilder(); 
+			        // Load the results into a StringBuilder 
+			        int read; 
+			        char[] buff = new char[1024]; 
+			        while ((read = in.read(buff)) != -1) { 
+			        results.append(buff, 0, read);	 
+			        } 
+			         
+			        return results.toString(); 
+			 
+			} catch(Exception ex) { 
+			String strMessage = ex.getMessage(); 
+			strMessage.trim(); 
+			ex.printStackTrace(); 
+			 
+			return ""; 
+		} 
  
-HttpURLConnection conn = null; 
+	} 
  
-try { 
+	private ArrayList<LatLng> getDirection (Document doc) { 
  
-String strURL = params[0]; 
-URL url = new URL(strURL); 
-conn = (HttpURLConnection) url.openConnection(); 
-InputStreamReader in = new InputStreamReader(conn.getInputStream()); 
- 
-StringBuilder results = new StringBuilder(); 
-        // Load the results into a StringBuilder 
-        int read; 
-        char[] buff = new char[1024]; 
-        while ((read = in.read(buff)) != -1) { 
-        results.append(buff, 0, read);	 
-        } 
-         
-        return results.toString(); 
- 
-} catch(Exception ex) { 
-String strMessage = ex.getMessage(); 
-strMessage.trim(); 
-ex.printStackTrace(); 
- 
-return ""; 
-} 
- 
-} 
- 
-private ArrayList<LatLng> getDirection (Document doc) { 
- 
-NodeList nl1, nl2, nl3; 
+		NodeList nl1, nl2, nl3; 
         ArrayList<LatLng> listGeopoints = new ArrayList<LatLng>(); 
         nl1 = doc.getElementsByTagName("step"); 
         if (nl1.getLength() > 0) { 
@@ -142,30 +139,31 @@ NodeList nl1, nl2, nl3;
         return listGeopoints;	 
 }	 
  
-}	 
+	}	 
  
-public final static String MODE_DRIVING = "driving"; 
-public final static String MODE_WALKING = "walking";	 
- 
-private static final String PLACES_API_BASE = "https://maps.googleapis.com/maps/api/directions"; 
-private static final String OUTPUT = "/xml";	 
-private static final String API_KEY = "AIzaSyBJryLCLoWeBUnSTabBxwDL4dWO4tExR1c"; 
- 
-public void drawDirectitions(GoogleMap map,  
-LatLng start, LatLng end,  
-String mode, 
-String language) { 
-     
-StringBuilder sb = new StringBuilder(PLACES_API_BASE + OUTPUT); 
-sb.append("?origin=" + start.latitude + "," + start.longitude); 
-sb.append("&destination=" + end.latitude + "," + end.longitude); 
-sb.append("&units=metric&mode=" + mode); 
-sb.append("&language=" + language);  
-sb.append("&key=" + API_KEY); 
- 
-CallDirections task = new CallDirections(); 
-task.setMap(map).execute(sb.toString()); 
-} 
+	public final static String MODE_DRIVING = "driving"; 
+	public final static String MODE_WALKING = "walking";	 
+	 
+	private static final String PLACES_API_BASE = "https://maps.googleapis.com/maps/api/directions"; 
+	private static final String OUTPUT = "/xml";	 
+	private static final String API_KEY = "AIzaSyBJryLCLoWeBUnSTabBxwDL4dWO4tExR1c"; 
+	 
+	public void drawDirectitions(GoogleMap map,  
+								LatLng start, LatLng end,  
+								String mode, 
+								String language) 
+	{ 
+								     
+		StringBuilder sb = new StringBuilder(PLACES_API_BASE + OUTPUT); 
+		sb.append("?origin=" + start.latitude + "," + start.longitude); 
+		sb.append("&destination=" + end.latitude + "," + end.longitude); 
+		sb.append("&units=metric&mode=" + mode); 
+		sb.append("&language=" + language);  
+		sb.append("&key=" + API_KEY); 
+	 
+		CallDirections task = new CallDirections(); 
+		task.setMap(map).execute(sb.toString()); 
+	} 
  
     private int getNodeIndex(NodeList nl, String nodename) { 
         for(int i = 0 ; i < nl.getLength() ; i++) { 

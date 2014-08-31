@@ -70,7 +70,7 @@ class PlacesAutoCompleteAdapter extends ArrayAdapter<FoundPlace> implements Filt
 	    	row = inflater.inflate(layoutResourceId, parent, false);
 	    	
 	    	holder = new PlaceHolder();
-	    	//holder.txtView = (TextView)row.findViewById(R.id.txtPlaceDesc);
+	    	holder.txtView = (TextView)row.findViewById(R.id.txtPlaceDesc);
 	    	
 	    	row.setTag(holder);
     	}
