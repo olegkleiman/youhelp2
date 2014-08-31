@@ -5,9 +5,13 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.location.Location;
 import android.location.LocationManager;
@@ -25,6 +29,8 @@ import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.Toast;
+
 import com.facebook.AppEventsLogger;
 
 
@@ -203,6 +209,10 @@ public class MainActivity extends FragmentActivity implements AnimationListener 
 	    	String SENT = "sent";
 			String DELIVERED = "delivered";
 			
+			// Register for SMS send action
+			registerReceiver(sendReceiver, new IntentFilter(SENT));
+			registerReceiver(deliveryReceiver, new IntentFilter(DELIVERED));
+			
 			final SmsManager smsManager = SmsManager.getDefault();
 			Intent sentIntent = new Intent(SENT);
 			final PendingIntent sentPI = PendingIntent.getBroadcast(getApplicationContext(), 0, 
@@ -225,12 +235,7 @@ public class MainActivity extends FragmentActivity implements AnimationListener 
     	}
     }
     
-    @SuppressWarnings("unused")
-	private void SendSmsWithIntent(List<String> smsNumbers, String smsMesssage){
-		
-		SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-		//String smsNumber = smsNumbers.get(0); 
-		
+    private void SendSmsWithIntent(List<String> smsNumbers, String smsMesssage){
 		StringBuilder sb = new StringBuilder();
 		
 		for(final String smsNumber : smsNumbers){
@@ -244,6 +249,55 @@ public class MainActivity extends FragmentActivity implements AnimationListener 
 		//i.setPackage("com.whatsapp");  
 		startActivity(i);		
 	}
+    
+    private BroadcastReceiver deliveryReceiver = new BroadcastReceiver() {
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			
+			Toast.makeText(getApplicationContext(), "Deliverd",
+			         Toast.LENGTH_LONG).show();
+			
+		}
+		
+	};
+
+    
+    private BroadcastReceiver sendReceiver = new BroadcastReceiver(){
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			String result = "";
+			
+			switch( getResultCode() ){
+				case Activity.RESULT_OK:
+					result = "Transmission successful";
+					break;
+					
+				case Activity.RESULT_CANCELED:
+					result = "SMS not delivered";
+	                break;                        
+					
+				case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
+					result = "Transmission failed";
+					break;
+					
+				case SmsManager.RESULT_ERROR_RADIO_OFF:
+					result = "Radio off";
+					break;
+					
+			    case SmsManager.RESULT_ERROR_NULL_PDU:
+			           result = "No PDU defined";
+			           break;
+			           
+			    case SmsManager.RESULT_ERROR_NO_SERVICE:
+			           result = "No service";
+			           break;
+			};
+			
+			Toast.makeText(getApplicationContext(),result,Toast.LENGTH_LONG).show();
+		}
+	};
     
     private String getUserID(){
     	
