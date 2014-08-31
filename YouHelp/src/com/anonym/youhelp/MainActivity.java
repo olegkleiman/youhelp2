@@ -1,10 +1,21 @@
 package com.anonym.youhelp;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Locale;
+
+import android.app.AlertDialog;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.location.Location;
+import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
+import android.telephony.SmsManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -99,7 +110,9 @@ public class MainActivity extends FragmentActivity implements AnimationListener 
 			@Override
 			public void onClick(View v) {
 
-				Intent intent = new Intent(MainActivity.this, HazardActivity.class);
+				Intent intent = new Intent(MainActivity.this, HazardActivity.class);			
+				intent.putExtra("userid", getUserID());
+				
 				startActivity(intent);
 				
 			}
@@ -111,7 +124,9 @@ public class MainActivity extends FragmentActivity implements AnimationListener 
 			@Override
 			public void onClick(View v) {
 
-				Intent intent = new Intent(MainActivity.this, HazardActivity.class);
+				Intent intent = new Intent(MainActivity.this, HazardActivity.class);				
+				intent.putExtra("userid", getUserID());
+				
 				startActivity(intent);
 				
 			}
@@ -123,13 +138,130 @@ public class MainActivity extends FragmentActivity implements AnimationListener 
 			@Override
 			public void onClick(View v) {
 
-				Intent intent = new Intent(MainActivity.this, HazardActivity.class);
+				Intent intent = new Intent(MainActivity.this, HazardActivity.class);			
+				intent.putExtra("userid", getUserID());
+				
 				startActivity(intent);
 				
 			}
         });
         
+        
+        final ImageView imageSOS = (ImageView)findViewById(R.id.imageViewSOS);
+        imageSOS.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				
+				SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+				String smsNumber1 = sharedPrefs.getString("sos1", "");
+				
+				List<String> smsNumbers = new ArrayList<String>();
+				
+				if( !smsNumber1.isEmpty() )
+					smsNumbers.add(smsNumber1);
+				String smsNumber2 = sharedPrefs.getString("sos2", "");
+				if( !smsNumber2.isEmpty() )
+					smsNumbers.add(smsNumber2);
+				
+				if( smsNumbers.isEmpty() ) {
+					msgBox("No emergency numbers", "Please provide the emergency numbers in settings.");
+					return;
+				}
+				
+				StringBuilder sb = new StringBuilder("I'm in an emergency. Please help!\n Map link: \n"); 
+				sb.append("http://maps.google.com/?ie=UTF&z=138&hq=&ll="); // here.com/");
+				
+				LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+				String locationProvider = LocationManager.NETWORK_PROVIDER;
+				// Or use LocationManager.GPS_PROVIDER
+
+				Location currentLocation = locationManager.getLastKnownLocation(locationProvider);
+				
+				double lat = currentLocation.getLatitude();
+		   	    double lon = currentLocation.getLongitude();
+		   	    String strCurrentLocation = String.format(Locale.US, "%.13f;%.13f", lat, lon);
+				sb.append(strCurrentLocation);
+				
+				String now = java.text.DateFormat.getDateTimeInstance().format(Calendar.getInstance().getTime());
+				sb.append(".\n Sent at ");
+				sb.append(now);
+				
+				final String emergencyMessage = sb.toString();
+				
+				SendSmsWithIntent(smsNumbers, emergencyMessage);
+				
+				SendSmsWithManager(smsNumbers, emergencyMessage);
+
+			}
+		});
     }
+
+    private void SendSmsWithManager(List<String> smsNumbers, String message){
+		
+    	try{
+	    	String SENT = "sent";
+			String DELIVERED = "delivered";
+			
+			final SmsManager smsManager = SmsManager.getDefault();
+			Intent sentIntent = new Intent(SENT);
+			final PendingIntent sentPI = PendingIntent.getBroadcast(getApplicationContext(), 0, 
+									sentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+			Intent deliveryIntent = new Intent(DELIVERED);
+			final PendingIntent deliverPI = PendingIntent.getBroadcast(getApplicationContext(), 0,
+									deliveryIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+			
+			
+			for(final String smsNumber : smsNumbers){
+				if( !smsNumber.isEmpty() ) {
+					
+					smsManager.sendTextMessage(smsNumber, null, message, 
+							   sentPI, deliverPI);
+				}
+		}  	
+    	}catch(Exception ex){
+    		ex.printStackTrace();
+    		Log.e(TAG, ex.getMessage());
+    	}
+    }
+    
+    @SuppressWarnings("unused")
+	private void SendSmsWithIntent(List<String> smsNumbers, String smsMesssage){
+		
+		SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+		//String smsNumber = smsNumbers.get(0); 
+		
+		StringBuilder sb = new StringBuilder();
+		
+		for(final String smsNumber : smsNumbers){
+			sb.append(smsNumber);
+			sb.append(";");
+		}
+		
+		Uri uri = Uri.parse("smsto:" + sb.toString());
+		Intent i = new Intent(Intent.ACTION_SENDTO, uri);
+		i.putExtra("sms_body", smsMesssage);  
+		//i.setPackage("com.whatsapp");  
+		startActivity(i);		
+	}
+    
+    private String getUserID(){
+    	
+		SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+		String userid = sharedPrefs.getString("registrationProvider", "");
+		return userid + ":" + sharedPrefs.getString("userid", "");
+    }
+    
+	public void msgBox(String title,String message)
+	{
+	    AlertDialog.Builder dlgAlert  = new AlertDialog.Builder(this);                      
+	    dlgAlert.setMessage(message)
+	    		.setTitle(title)           
+	    		.setPositiveButton("OK", null)
+	    		//.setCancelable(true)
+	    		.create().show();
+
+	}
     
     @Override
     protected void onResume() {

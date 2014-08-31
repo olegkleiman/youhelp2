@@ -8,6 +8,7 @@
     <string name="cancelled">Cancelled</string>
     <string name="permission_not_granted">Unable to perform selected action because permissions were not granted.</string>
     <string name="ok">OK</string>
+    <string name="send_toast_service_url">http://youhelp.cloudapp.net/YouHelpService.svc/sendtoast</string>
     <string name="title_activity_register">RegisterActivity</string>
     <string name="you_are_here">You are here</string>
     <string name="say_something">Tap to notify</string>
