@@ -16,6 +16,7 @@ import android.content.SharedPreferences;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
@@ -28,15 +29,20 @@ import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
-
+import com.google.android.gms.gcm.*;
+import com.microsoft.windowsazure.messaging.NotificationHub;
+import com.microsoft.windowsazure.notifications.NotificationsManager;
 import com.facebook.AppEventsLogger;
-
 
 public class MainActivity extends FragmentActivity implements AnimationListener {
 
-	private static final String TAG = "YouHelp v 2";
+	private static final String TAG = "YouHelp";
     
 	static final int REGISTER_USER_REQUEST = 1; 
+	
+	private String GCM_SENDER_ID = "314835619656";
+	private GoogleCloudMessaging gcm;
+	private NotificationHub hub;
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,7 +68,37 @@ public class MainActivity extends FragmentActivity implements AnimationListener 
 			return;
 		}
 		
+		NotificationsManager.handleNotifications(this, GCM_SENDER_ID, AzureNotificationsHandler.class);
+		gcm = GoogleCloudMessaging.getInstance(this);
+		
+		String connectionString = "Endpoint=sb://variant.servicebus.windows.net/;SharedAccessKeyName=DefaultFullSharedAccessSignature;SharedAccessKey=am4TM7Ajiot5kLoEelqQvU03eqlDUsdYrBt7UxJP22A=";
+		hub = new NotificationHub("youhelphub", connectionString, this);
+		
+		registerWithNotificationHubs();
+		
 		InitStuff();
+    }
+    
+    @SuppressWarnings("unchecked")
+    private void registerWithNotificationHubs() {
+    	new AsyncTask() {
+
+			@Override
+			protected Object doInBackground(Object... params) {
+				try{
+					
+					String regid = gcm.register(GCM_SENDER_ID);
+					hub.register(regid);
+				} catch (Exception e) {
+					String msg = e.getMessage();
+					Log.e(TAG, msg);
+					return e;
+				}
+				
+				return null;
+			}
+    		
+    	}.execute(null, null, null);
     }
     
     private void InitStuff(){
