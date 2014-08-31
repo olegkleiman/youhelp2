@@ -21,8 +21,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.facebook.Session;
@@ -30,7 +34,9 @@ import com.facebook.SessionState;
 import com.facebook.UiLifecycleHelper;
 
 	@SuppressLint("NewApi") 
-	public class SettingsActivity extends Activity {
+	public class SettingsActivity extends Activity 
+				implements OnItemSelectedListener
+	{
 
 	ActionBar.Tab tab1, tab2, tab3;
 	Fragment fragmentTab1 = new FragmentTabUser();
@@ -102,6 +108,30 @@ import com.facebook.UiLifecycleHelper;
 		
 		editor.commit();
 	  
+	}
+	
+	@Override
+	public void onItemSelected(AdapterView<?> parent, 
+			View view, 
+            int pos, 
+            long id) 
+	{
+		String str = (String) parent.getItemAtPosition(pos);
+		int nAppCode = 2;
+		if( str.contains("Waze"))
+			nAppCode = 1;
+		
+		SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+		SharedPreferences.Editor editor = sharedPrefs.edit();
+		editor.putInt("mapsApp", nAppCode);
+		editor.commit();
+		
+	}
+	
+	@Override
+	public void onNothingSelected(AdapterView<?> parent) {
+		// TODO Auto-generated method stub
+
 	}
 	
 	@Override
@@ -213,14 +243,35 @@ import com.facebook.UiLifecycleHelper;
 		  }
 		}
 	
-	public class FragmentTabSystem extends Fragment {
+	public class FragmentTabSystem extends Fragment 
+	{
 		  public View onCreateView(LayoutInflater inflater, ViewGroup container, 
 		                           Bundle savedInstanceState){
 			View view = inflater.inflate(R.layout.tab_system, container, false);
 
+			Spinner spinner = (Spinner) view.findViewById(R.id.mapsapp_spinner);
+
+			// Create an ArrayAdapter using the string array and a default spinner layout
+			ArrayAdapter<CharSequence> adapter = 
+					ArrayAdapter.createFromResource(SettingsActivity.this,
+											        R.array.mapsapps_array, 
+											        R.layout.spinner_item);
+											        //android.R.layout.simple_spinner_item);
+			// Specify the layout to use when the list of choices appears
+			adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+			
+			// Apply the adapter to the spinner
+			spinner.setAdapter(adapter);
+			
+			spinner.setOnItemSelectedListener(SettingsActivity.this);
+			
+			SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+			int nAppCode = sharedPrefs.getInt("mapsApp", 2);
+			spinner.setSelection(nAppCode-1);
+
 			return view;
 		  }
-		}
+	}
 	
 	@SuppressLint("NewApi") 
 	public class MyTabListener implements ActionBar.TabListener {

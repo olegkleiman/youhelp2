@@ -19,6 +19,9 @@ public final class R {
         public static final int fadeout=0x7f040007;
         public static final int move=0x7f040008;
     }
+    public static final class array {
+        public static final int mapsapps_array=0x7f0c0000;
+    }
     public static final class attr {
         /**  Custom divider drawable to use for elements in the action bar. 
          <p>Must be a reference to another resource, in the form "<code>@[+][<i>package</i>:]<i>type</i>:<i>name</i></code>"
@@ -1694,7 +1697,7 @@ containing a value of this type.
         public static final int action_menu_divider=0x7f080028;
         public static final int action_menu_presenter=0x7f080029;
         public static final int action_mode_close_button=0x7f080038;
-        public static final int action_settings=0x7f080089;
+        public static final int action_settings=0x7f08008b;
         public static final int activity_chooser_view_content=0x7f080039;
         public static final int always=0x7f08001e;
         public static final int autocomplete=0x7f080052;
@@ -1766,6 +1769,7 @@ containing a value of this type.
         public static final int login_button=0x7f080054;
         public static final int main_layout=0x7f080072;
         public static final int map=0x7f080053;
+        public static final int mapsapp_spinner=0x7f080083;
         public static final int match_parent=0x7f08000c;
         public static final int middle=0x7f080024;
         public static final int monochrome=0x7f080013;
@@ -1798,27 +1802,28 @@ containing a value of this type.
         public static final int split_action_bar=0x7f080032;
         public static final int strict_sandbox=0x7f080009;
         public static final int submit_area=0x7f08004d;
-        public static final int switchAllowPhoneSend=0x7f080088;
+        public static final int switchAllowPhoneSend=0x7f08008a;
         public static final int tabMode=0x7f080015;
         public static final int terrain=0x7f080003;
-        public static final int textView1=0x7f080085;
+        public static final int textView1=0x7f080087;
         public static final int textView1SOS=0x7f08007e;
         public static final int textView2SOS=0x7f080080;
-        public static final int textViewSwitch1=0x7f080087;
+        public static final int textViewMapsApp=0x7f080082;
+        public static final int textViewSwitch1=0x7f080089;
         public static final int title=0x7f08003f;
         public static final int top_action_bar=0x7f080034;
         public static final int txtInfoWindowEventType=0x7f080071;
         public static final int txtInfoWindowTitle=0x7f080070;
         public static final int txtMessage=0x7f080050;
-        public static final int txtPhoneNumber=0x7f080086;
+        public static final int txtPhoneNumber=0x7f080088;
         public static final int txtPlaceDesc=0x7f08007c;
         public static final int txtSOSnumber1=0x7f08007f;
         public static final int txtSOSnumber2=0x7f080081;
-        public static final int txtUserFirstName=0x7f080082;
-        public static final int txtUserLastName=0x7f080083;
+        public static final int txtUserFirstName=0x7f080084;
+        public static final int txtUserLastName=0x7f080085;
         public static final int up=0x7f080035;
         public static final int useLogo=0x7f080016;
-        public static final int userProfilePicture=0x7f080084;
+        public static final int userProfilePicture=0x7f080086;
         public static final int withText=0x7f08001f;
         public static final int wrap_content=0x7f08000d;
     }
@@ -1895,17 +1900,18 @@ containing a value of this type.
         public static final int main_layout=0x7f03002b;
         public static final int search_map_list_item=0x7f03002c;
         public static final int settings_layout=0x7f03002d;
-        public static final int support_simple_spinner_dropdown_item=0x7f03002e;
-        public static final int tab_sos=0x7f03002f;
-        public static final int tab_system=0x7f030030;
-        public static final int tab_user=0x7f030031;
+        public static final int spinner_item=0x7f03002e;
+        public static final int support_simple_spinner_dropdown_item=0x7f03002f;
+        public static final int tab_sos=0x7f030030;
+        public static final int tab_system=0x7f030031;
+        public static final int tab_user=0x7f030032;
     }
     public static final class menu {
-        public static final int hazard=0x7f0c0000;
-        public static final int main=0x7f0c0001;
-        public static final int map=0x7f0c0002;
-        public static final int register=0x7f0c0003;
-        public static final int settings=0x7f0c0004;
+        public static final int hazard=0x7f0d0000;
+        public static final int main=0x7f0d0001;
+        public static final int map=0x7f0d0002;
+        public static final int register=0x7f0d0003;
+        public static final int settings=0x7f0d0004;
     }
     public static final class string {
         public static final int AllowSendPhone=0x7f07005e;
@@ -2084,6 +2090,7 @@ containing a value of this type.
         public static final int image_sos_desc=0x7f07004e;
         public static final int image_trip_desc=0x7f07004f;
         public static final int image_view_map=0x7f070050;
+        public static final int maps_app=0x7f070062;
         public static final int ok=0x7f070047;
         public static final int permission_not_granted=0x7f070046;
         public static final int say_something=0x7f07004b;

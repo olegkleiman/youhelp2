@@ -141,11 +141,6 @@ public class RegisterActivity extends FragmentActivity {
 	private void saveFBUser(GraphUser fbUser){
 
 		SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-//		StringBuilder sb = new StringBuilder(fbProvider);
-//		sb.append(":");
-//		sb.append(fbUser.getFirstName());
-//		sb.append(" ");
-//		sb.append(fbUser.getLastName());
 
 		SharedPreferences.Editor editor = sharedPrefs.edit();
 		editor.putString("prefUsername", fbUser.getFirstName());

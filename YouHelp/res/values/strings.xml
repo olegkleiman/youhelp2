@@ -34,4 +34,11 @@
     <string name="title_activity_main">MainActivity</string>
     <string name="title_activity_hazard">HazardActivity</string>
 	<string name="your_message">Your Message:</string>
+	<string name="maps_app">Maps App:</string>
+	
+	<string-array name="mapsapps_array">
+	    <item>Waze</item>
+        <item>Google Maps</item>
+    </string-array>
+    
 </resources>
