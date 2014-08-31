@@ -90,13 +90,13 @@ import com.facebook.UiLifecycleHelper;
 		// txtSOS views can be null is 'SOS' tab was no activated
 		if( txtSOS1 != null ){
 			String sos1 = txtSOS1.getText().toString();
-			if( sos1.length() != 0 )
+			//if( sos1.length() != 0 )
 				editor.putString("sos1", sos1);
 		}
 		
 		if( txtSOS2 != null ) {
 			String sos2 = txtSOS2.getText().toString();
-			if( sos2.length() != 0 )
+			//if( sos2.length() != 0 )
 				editor.putString("sos2", sos2);
 		}
 		
