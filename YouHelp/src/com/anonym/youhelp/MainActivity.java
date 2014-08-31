@@ -2,7 +2,6 @@ package com.anonym.youhelp;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
@@ -21,7 +20,6 @@ import com.facebook.AppEventsLogger;
 public class MainActivity extends FragmentActivity implements AnimationListener {
 
 	private static final String TAG = "YouHelp v 2";
-	private final String PENDING_ACTION_BUNDLE_KEY = "com.facebook.samples.hellofacebook:PendingAction";
     
 	static final int REGISTER_USER_REQUEST = 1; 
 	
