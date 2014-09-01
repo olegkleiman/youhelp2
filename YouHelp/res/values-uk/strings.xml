@@ -7,4 +7,10 @@
     <string name="SecondarySOSNumber">Додатковий номер для екстрених дзвінків</string>
     <string name="AllowSendPhone">Дозволити відправку цього номера з повідомленнями</string>
     <string name="your_message">Ваше повідомлення:</string>
+    
+    <string name="refresh_button_caption">Оновити</string>
+    <string name="sendmessage_button_caption">Надіслати</string>
+    
+    <string name="buttonDeleteAll">Видалити все</string>
+    <string name="buttonCallMe">Зателефонуйте мені</string> 
 </resources>

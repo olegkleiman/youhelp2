@@ -7,4 +7,11 @@
     <string name="SecondarySOSNumber">מספר משני</string>
     <string name="AllowSendPhone">אפשר לשלוח מספר זה עם הודעות</string>
     <string name="your_message">ההודעה שלך</string>
+      
+    <string name="sendmessage_button_caption">שלח</string>
+    <string name="refresh_button_caption">רענן</string>
+    <string name="next_register_button_caption">הבא</string>
+    
+    <string name="buttonDeleteAll">מחק הכל</string>
+    <string name="buttonCallMe">תתקשר עליי</string>  
 </resources>

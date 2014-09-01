@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
@@ -192,31 +193,38 @@ public class MapActivity extends FragmentActivity implements
 
 	private void SendNotification() {
 		
-		String serviceURL = getString(R.string.send_toast_service_url);
-		StringBuilder sb = new StringBuilder(serviceURL); 
-		sb.append("?title=");
-		sb.append(TextUtils.htmlEncode("Ride"));
-  	 	
-		sb.append("&subtitle=");
+		try {
+			String serviceURL = getString(R.string.send_toast_service_url);
+			StringBuilder sb = new StringBuilder(serviceURL); 
+			sb.append("?title=");
+			String title = URLEncoder.encode("Wants share ride", "utf-8");
+			sb.append(title);
+	  	 	
+			sb.append("&subtitle=");
+			
+			double lat = myLocation.getLatitude();
+	   	    double lon = myLocation.getLongitude();
+	   	 	String strCurrentLocation = String.format(Locale.US, "%.13f;%.13f", lat, lon);
+			
+			sb.append(strCurrentLocation);
+			sb.append("&tags=null");
+			
+			sb.append("&userid=");
+			SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+			String userid = sharedPrefs.getString("registrationProvider", "")
+					+ ":"
+					+ sharedPrefs.getString("userid", "");
+			sb.append(userid);
+			
+			String uri = sb.toString();
+		 
+			SendMessageAsyncTask sendTask = new SendMessageAsyncTask(this);
+			sendTask.execute(uri);		
+			
+		} catch(Exception ex){
+			Toast.makeText(this, ex.getMessage(), Toast.LENGTH_SHORT).show(); 
+		}
 		
-		double lat = myLocation.getLatitude();
-   	    double lon = myLocation.getLongitude();
-   	 	String strCurrentLocation = String.format(Locale.US, "%.13f;%.13f", lat, lon);
-		
-		sb.append(strCurrentLocation);
-		sb.append("&tags=null");
-		
-		sb.append("&userid=");
-		SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-		String userid = sharedPrefs.getString("registrationProvider", "")
-				+ ":"
-				+ sharedPrefs.getString("userid", "");
-		sb.append(userid);
-		
-		String uri = sb.toString();
-	 
-		SendMessageAsyncTask sendTask = new SendMessageAsyncTask(this);
-		sendTask.execute(uri);		
 	}
 	
 	private boolean checkPlayServices(){

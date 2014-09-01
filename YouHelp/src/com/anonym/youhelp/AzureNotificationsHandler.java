@@ -1,6 +1,7 @@
 package com.anonym.youhelp;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import android.app.ActivityManager;
@@ -23,6 +24,8 @@ import android.widget.Toast;
 import com.microsoft.windowsazure.notifications.NotificationsHandler;
 
 public class AzureNotificationsHandler extends NotificationsHandler {
+	
+	private YHDataSource datasource;
 	
 	public AzureNotificationsHandler()
 	{
@@ -64,15 +67,37 @@ public class AzureNotificationsHandler extends NotificationsHandler {
 				+ sharedPrefs.getString("userid", "") ;
 		
 		// Do not receive from yourself
-//		if( myUserid.length() != 0
-//			&& myUserid.equals(sentUserid) ) { // current user == sending user
-//				return;
-//		}
+		if( myUserid.length() != 0
+			&& myUserid.equals(sentUserid) ) { // current user == sending user
+				return;
+		}
+		
+		persistMessage(context, title, sentUserid);
 	    
 		startExternalActivity(context, tokens[0], tokens[1], title, sentUserid);
 		
 	    sendNotification(title);
 
+	}
+	
+	private void persistMessage(Context context, String content, String userid){
+		
+		try{
+			if( datasource == null)
+				datasource = new YHDataSource(context);
+				
+			datasource.open();
+			 
+			Date date = new Date();
+			datasource.createYHMessage(content, userid, date, "");
+			datasource.close();
+		
+		}catch(Exception ex){
+			
+			Log.e(TAG, ex.getMessage());
+			//Toast.makeText(context, ex.getMessage(), Toast.LENGTH_LONG).show();
+
+		}
 	}
 	
 	private boolean isActivityRunning(Context context, String activityName)
