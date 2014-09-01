@@ -10,6 +10,8 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -178,6 +180,23 @@ public class AzureNotificationsHandler extends NotificationsHandler {
 	
 	}
 	
+	
+	private static final String GOOGLE_MAPS_PACKAGE_NAME = "com.google.android.apps.maps";
+	
+	private int getGoogleMapsVersion(Context context) {
+		
+		try{
+			PackageManager packageManger = context.getPackageManager();
+			PackageInfo pInfo = packageManger.getPackageInfo(GOOGLE_MAPS_PACKAGE_NAME, 0);
+			
+			return pInfo.versionCode; 
+		} catch(Exception ex){
+			ex.printStackTrace();
+		}
+		
+		return 0;
+	}
+	
 	private void startGoogleMaps(Context context,
 								String lat,
 								String lon,
@@ -185,22 +204,32 @@ public class AzureNotificationsHandler extends NotificationsHandler {
 								String userid)
 	{
 		try{
-			StringBuilder sb = new StringBuilder("geo:0,0?q=");
+			StringBuilder sb = new StringBuilder("geo:");
 			sb.append(lat);
 			sb.append(",");
 			sb.append(lon);
-			sb.append("(" + title + " from " + userid + ")");
+			sb.append("?q="); // at this point should be "0,0?q=
+			sb.append(lat);
+			sb.append(",");
+			sb.append(lon);
+
+			if( getGoogleMapsVersion(context) >= 800000000 ) 
+				sb.append("(" + title + " from " + userid + ")");
 			
 			String url = sb.toString();
 			
-			Intent gmIntent = new Intent(android.content.Intent.ACTION_VIEW, 
+			Intent gmIntent = new Intent(android.content.Intent.ACTION_VIEW);
+			gmIntent.setData(Uri.parse(url));
 				    //Uri.parse("http://maps.google.com/maps?daddr=32.072072072072075,34.8716280366431456&mode=driving"));
 					//Uri.parse("geo:0,0?q=32.072072072072075,34.8716280366431456(Reported Place)")
-					Uri.parse( url )
-					);
-			gmIntent.setClassName("com.google.android.apps.maps", "com.google.android.maps.MapsActivity");
+					//Uri.parse( url )
+					//);
+			gmIntent.setClassName(GOOGLE_MAPS_PACKAGE_NAME, "com.google.android.maps.MapsActivity");
 			gmIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-			context.startActivity(gmIntent);
+			
+			if( gmIntent.resolveActivity(context.getPackageManager()) != null) {
+				context.startActivity(gmIntent);
+			}
 			
 		} catch(Exception ex) {
 			Toast.makeText(context, ex.getMessage(),
@@ -208,6 +237,8 @@ public class AzureNotificationsHandler extends NotificationsHandler {
 		}
 		
 	}
+	
+	
 	
 	private void sendNotification(String msg) {
 	    mNotificationManager = (NotificationManager)
