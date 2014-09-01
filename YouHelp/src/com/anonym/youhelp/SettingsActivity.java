@@ -120,6 +120,8 @@ import com.facebook.UiLifecycleHelper;
 		int nAppCode = 2;
 		if( str.contains("Waze"))
 			nAppCode = 1;
+		else if( str.contains("Internal"))
+			nAppCode = 3;
 		
 		SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 		SharedPreferences.Editor editor = sharedPrefs.edit();

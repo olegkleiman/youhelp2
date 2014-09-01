@@ -75,6 +75,7 @@ public class HazardActivity extends Activity {
 					sb.append(userid);
 					
 					String uri = sb.toString();
+					
 					SendMessageAsyncTask sendTask = new SendMessageAsyncTask();
 					//sendTask.ParentActivity = this;
 					sendTask.execute(uri);

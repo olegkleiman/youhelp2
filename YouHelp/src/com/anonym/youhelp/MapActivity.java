@@ -1,12 +1,24 @@
 package com.anonym.youhelp;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Locale;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.StatusLine;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.HttpContext;
 import org.json.JSONObject;
 
+import com.anonym.youhelp.HazardActivity.SendMessageAsyncTask;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -27,12 +39,15 @@ import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -65,6 +80,19 @@ public class MapActivity extends FragmentActivity implements
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_map);
+		
+		String userid, coords, title;
+		
+		Intent requestingIntent = getIntent();
+		if( requestingIntent != null )
+		{
+			if( requestingIntent.hasExtra("userid") )
+				userid = requestingIntent.getStringExtra("userid");
+			if( requestingIntent.hasExtra("coords") )
+				coords = requestingIntent.getStringExtra("coords");
+			if( requestingIntent.hasExtra("title") )
+				title = requestingIntent.getStringExtra("title");	
+		}
 		
 		AutoCompleteTextView autoCompView = (AutoCompleteTextView) findViewById(R.id.autocomplete);
 	    autoCompView.setAdapter(new PlacesAutoCompleteAdapter(this, R.layout.search_map_list_item));
@@ -101,7 +129,34 @@ public class MapActivity extends FragmentActivity implements
 				// TODO : detect used language 
 				// List of supported languages : https://spreadsheets.google.com/pub?key=p9pdwsai2hDMsLkXsoM05KQ&gid=1); 
 				"iw");  
+				
+				// Send Notification
+				
+				String serviceURL = getString(R.string.send_toast_service_url);
+				StringBuilder sb = new StringBuilder(serviceURL); 
+				sb.append("?title=");
+				sb.append("Ride");
+		  	 	
+				sb.append("&subtitle=");
+				
+				double lat = myLocation.getLatitude();
+		   	    double lon = myLocation.getLongitude();
+		   	 	String strCurrentLocation = String.format(Locale.US, "%.13f;%.13f", lat, lon);
+				
+				sb.append(strCurrentLocation);
+				sb.append("&tags=null");
+				
+				sb.append("&userid=");
+				SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+				String userid = sharedPrefs.getString("registrationProvider", "")
+						+ ":"
+						+ sharedPrefs.getString("userid", "");
+				sb.append(userid);
+				
+				String uri = sb.toString();
 			 
+				SendMessageAsyncTask sendTask = new SendMessageAsyncTask();
+				sendTask.execute(uri);
 			} 
 			
 		});
@@ -129,25 +184,6 @@ public class MapActivity extends FragmentActivity implements
 				Log.e(TAG, msg);
 			}
 		}
-	}
-
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.map, menu);
-		return true;
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		// Handle action bar item clicks here. The action bar will
-		// automatically handle clicks on the Home/Up button, so long
-		// as you specify a parent activity in AndroidManifest.xml.
-		int id = item.getItemId();
-		if (id == R.id.action_settings) {
-			return true;
-		}
-		return super.onOptionsItemSelected(item);
 	}
 
 	private boolean checkPlayServices(){
@@ -434,6 +470,16 @@ public class MapActivity extends FragmentActivity implements
 	}
 
 	@Override
+	public void onStart() {
+		super.onStart();
+	}
+	
+	@Override
+	public void onResume() {
+		super.onResume();
+	}
+	
+	@Override
 	public void onProviderDisabled(String arg0) {
 		// TODO Auto-generated method stub
 		
@@ -486,4 +532,39 @@ public class MapActivity extends FragmentActivity implements
 		
 	}
 
+	class SendMessageAsyncTask extends AsyncTask<String, String, String> {
+
+		@Override
+		protected String doInBackground(String... uri) {
+
+			HttpClient httpclient = new DefaultHttpClient();
+			String responseString = null;
+
+	   	 	try{
+	   	 		
+	   	 		HttpPost httpGet = new HttpPost(uri[0]);
+	   	 		HttpContext localContext = new BasicHttpContext();
+	   	 		
+	   	 		HttpResponse response = httpclient.execute(httpGet, localContext);
+	   	 		StatusLine statusLine = response.getStatusLine();
+	   	 		
+	   	 		if(statusLine.getStatusCode() == HttpStatus.SC_OK){
+	   	 			ByteArrayOutputStream out = new ByteArrayOutputStream();
+	   	 			response.getEntity().writeTo(out);
+	   	 			out.close();
+	   	 			responseString = out.toString();
+	   	 		}else{
+	   	 			//Closes the connection.
+	   	 			response.getEntity().getContent().close();
+	   	 			throw new IOException(statusLine.getReasonPhrase());
+	   	 		}
+	   	 	}catch(Exception e){
+   	 		
+   	        	e.printStackTrace();
+   	        }
+	   	 	
+	   	 	return responseString;
+		}
+		
+	}
 }

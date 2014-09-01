@@ -31,6 +31,7 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 import com.google.android.gms.gcm.*;
 import com.microsoft.windowsazure.messaging.NotificationHub;
+import com.microsoft.windowsazure.notifications.NotificationsHandler;
 import com.microsoft.windowsazure.notifications.NotificationsManager;
 import com.facebook.AppEventsLogger;
 
@@ -68,7 +69,9 @@ public class MainActivity extends FragmentActivity implements AnimationListener 
 			return;
 		}
 		
-		NotificationsManager.handleNotifications(this, GCM_SENDER_ID, AzureNotificationsHandler.class);
+		NotificationsManager.handleNotifications(this, 
+												GCM_SENDER_ID, 
+												AzureNotificationsHandler.class);
 		gcm = GoogleCloudMessaging.getInstance(this);
 		
 		String connectionString = "Endpoint=sb://variant.servicebus.windows.net/;SharedAccessKeyName=DefaultFullSharedAccessSignature;SharedAccessKey=am4TM7Ajiot5kLoEelqQvU03eqlDUsdYrBt7UxJP22A=";
@@ -78,13 +81,12 @@ public class MainActivity extends FragmentActivity implements AnimationListener 
 		
 		InitStuff();
     }
-    
-    @SuppressWarnings("unchecked")
+
     private void registerWithNotificationHubs() {
-    	new AsyncTask() {
+    	new AsyncTask<Void, Void, Void>() {
 
 			@Override
-			protected Object doInBackground(Object... params) {
+			protected Void doInBackground(Void... params) {
 				try{
 					
 					String regid = gcm.register(GCM_SENDER_ID);
@@ -92,13 +94,12 @@ public class MainActivity extends FragmentActivity implements AnimationListener 
 				} catch (Exception e) {
 					String msg = e.getMessage();
 					Log.e(TAG, msg);
-					return e;
 				}
 				
 				return null;
 			}
     		
-    	}.execute(null, null, null);
+    	}.execute();
     }
     
     private void InitStuff(){
@@ -404,6 +405,8 @@ public class MainActivity extends FragmentActivity implements AnimationListener 
     @Override
     public void onDestroy() {
         super.onDestroy();
+
+		//NotificationsManager.stopHandlingNotifications(this);
 
     }
  

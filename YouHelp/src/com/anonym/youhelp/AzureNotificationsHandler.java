@@ -1,5 +1,10 @@
 package com.anonym.youhelp;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import android.app.ActivityManager;
+import android.app.ActivityManager.RunningTaskInfo;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -17,12 +22,26 @@ import com.microsoft.windowsazure.notifications.NotificationsHandler;
 
 public class AzureNotificationsHandler extends NotificationsHandler {
 	
+	public AzureNotificationsHandler()
+	{
+		Log.d(TAG, "AzureNotificationsHandler created");
+	}
+	
 	private static final String TAG = "AzureNotificationsHandler";
 	
 	public static final int NOTIFICATION_ID = 1;
 	private NotificationManager mNotificationManager;
 	NotificationCompat.Builder builder;
 	Context ctx;
+	
+	@Override
+	public void onRegistered(Context context, 
+							String gcmRegistrationId) 
+	{
+		String msg ="Azure Notification Handler was registered with GCM: " + gcmRegistrationId;
+		
+		Toast.makeText(context, msg, Toast.LENGTH_LONG).show(); 
+	}
 	
 	@Override
 	public void onReceive(Context context, Bundle bundle) {
@@ -38,20 +57,46 @@ public class AzureNotificationsHandler extends NotificationsHandler {
 			return;
 
 		SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
-		String myUserid = sharedPrefs.getString("userid", "") 
-				+ ";" 
-				+ sharedPrefs.getString("registrationProvider", "");
+		String myUserid = sharedPrefs.getString("registrationProvider", "") 
+				+ ":" 
+				+ sharedPrefs.getString("userid", "") ;
 		
 		// Do not receive from yourself
-		if( myUserid.length() != 0
-			&& myUserid.equals(sentUserid) ) { // current user == sending user
-				return;
-		}
+//		if( myUserid.length() != 0
+//			&& myUserid.equals(sentUserid) ) { // current user == sending user
+//				return;
+//		}
 	    
 		startExternalActivity(context, tokens[0], tokens[1], title, sentUserid);
 		
 	    sendNotification(title);
 
+	}
+	
+	private boolean isActivityRunning(Context context, String activityName)
+	{
+		ArrayList<String> runningactivities = new ArrayList<String>();
+		ActivityManager activityManager = (ActivityManager)context.getSystemService (Context.ACTIVITY_SERVICE); 
+		//activityManager.isUserAMonkey()
+		
+		List<RunningTaskInfo> services = activityManager.getRunningTasks(Integer.MAX_VALUE); 
+
+		for (int i1 = 0; i1 < services.size(); i1++) { 
+	        runningactivities.add(0,services.get(i1).topActivity.toString());  
+	    }
+		
+		StringBuilder sb = new StringBuilder("ComponentInfo{");
+		sb.append(activityName);
+		sb.append("}");
+		
+		String componentName = sb.toString();
+		
+		if(runningactivities.contains(componentName)==true){
+	        return true;
+
+	    }
+		
+		return false;
 	}
 	
 	private void startExternalActivity(Context context,
@@ -74,16 +119,43 @@ public class AzureNotificationsHandler extends NotificationsHandler {
 			case 2: // Google Maps
 				startGoogleMaps(context,lat, lon, title, userid);
 				break;
+				
+			case 3:
+				startInternalMaps(context,lat, lon, title, userid);
+				break;
 		}
 		
 		
 	}
 	
+	private void startInternalMaps(Context context,
+							String lat,
+							String lon,
+							String title,
+							String userid)
+	{
+		try{
+			
+			//boolean bIsRunning = isActivityRunning(context, "com.anonym/com.anonym.MapActivity");
+	        Intent activityIntent =  new Intent(context, MapActivity.class);
+	        activityIntent.putExtra("userid", userid);
+	        activityIntent.putExtra("coords", lat + "," + lon);
+	        activityIntent.putExtra("title", title);
+		    PendingIntent contentIntent = PendingIntent.getActivity(context, 0,
+		    											activityIntent, 0);
+		    contentIntent.send(10);
+		
+		} catch(Exception ex) {
+			Toast.makeText(context, ex.getMessage(),
+			         Toast.LENGTH_LONG).show(); 
+		}
+	}
+	
 	private void startWaze(Context context,
-								String lat,
-								String lon,
-								String title,
-								String userid)
+							String lat,
+							String lon,
+							String title,
+							String userid)
 	{
 		try{
 			StringBuilder sb = new StringBuilder("waze://?ll=");

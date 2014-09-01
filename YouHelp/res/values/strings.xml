@@ -39,6 +39,7 @@
 	<string-array name="mapsapps_array">
 	    <item>Waze</item>
         <item>Google Maps</item>
+        <item>Internal</item>
     </string-array>
     
 </resources>
