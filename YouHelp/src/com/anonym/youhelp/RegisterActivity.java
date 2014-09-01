@@ -23,7 +23,7 @@ import com.facebook.widget.LoginButton;
 
 public class RegisterActivity extends FragmentActivity {
 
-	private static final String TAG = "YouHelp v 2";
+	private static final String TAG = "YouHelp";
 	private final String PENDING_ACTION_BUNDLE_KEY = "com.anonym.youhelp:PendingAction";
 	private final String fbProvider = "fb";
 	

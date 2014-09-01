@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Locale;
@@ -41,6 +42,8 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
@@ -52,6 +55,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
@@ -80,18 +84,31 @@ public class MapActivity extends FragmentActivity implements
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_map);
-		
-		String userid, coords, title;
-		
+
 		Intent requestingIntent = getIntent();
-		if( requestingIntent != null )
+		if( requestingIntent != null 
+				&& requestingIntent.hasExtra("userid"))
 		{
+			String userid = "", coords, title = "";
+			String[] tokens = null;
+			
 			if( requestingIntent.hasExtra("userid") )
 				userid = requestingIntent.getStringExtra("userid");
 			if( requestingIntent.hasExtra("coords") )
+			{
 				coords = requestingIntent.getStringExtra("coords");
+				tokens = coords.split(",");
+			}
+			
 			if( requestingIntent.hasExtra("title") )
 				title = requestingIntent.getStringExtra("title");	
+			
+			Location location = new Location("");
+			location.setLatitude(Float.parseFloat(tokens[0])); 
+			location.setLongitude(Float.parseFloat(tokens[1]));
+			
+			addReportedLocation(location, title, userid);
+
 		}
 		
 		AutoCompleteTextView autoCompView = (AutoCompleteTextView) findViewById(R.id.autocomplete);
@@ -131,32 +148,7 @@ public class MapActivity extends FragmentActivity implements
 				"iw");  
 				
 				// Send Notification
-				
-				String serviceURL = getString(R.string.send_toast_service_url);
-				StringBuilder sb = new StringBuilder(serviceURL); 
-				sb.append("?title=");
-				sb.append("Ride");
-		  	 	
-				sb.append("&subtitle=");
-				
-				double lat = myLocation.getLatitude();
-		   	    double lon = myLocation.getLongitude();
-		   	 	String strCurrentLocation = String.format(Locale.US, "%.13f;%.13f", lat, lon);
-				
-				sb.append(strCurrentLocation);
-				sb.append("&tags=null");
-				
-				sb.append("&userid=");
-				SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-				String userid = sharedPrefs.getString("registrationProvider", "")
-						+ ":"
-						+ sharedPrefs.getString("userid", "");
-				sb.append(userid);
-				
-				String uri = sb.toString();
-			 
-				SendMessageAsyncTask sendTask = new SendMessageAsyncTask();
-				sendTask.execute(uri);
+				SendNotification();
 			} 
 			
 		});
@@ -186,6 +178,35 @@ public class MapActivity extends FragmentActivity implements
 		}
 	}
 
+	private void SendNotification() {
+		
+		String serviceURL = getString(R.string.send_toast_service_url);
+		StringBuilder sb = new StringBuilder(serviceURL); 
+		sb.append("?title=");
+		sb.append("Ride");
+  	 	
+		sb.append("&subtitle=");
+		
+		double lat = myLocation.getLatitude();
+   	    double lon = myLocation.getLongitude();
+   	 	String strCurrentLocation = String.format(Locale.US, "%.13f;%.13f", lat, lon);
+		
+		sb.append(strCurrentLocation);
+		sb.append("&tags=null");
+		
+		sb.append("&userid=");
+		SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+		String userid = sharedPrefs.getString("registrationProvider", "")
+				+ ":"
+				+ sharedPrefs.getString("userid", "");
+		sb.append(userid);
+		
+		String uri = sb.toString();
+	 
+		SendMessageAsyncTask sendTask = new SendMessageAsyncTask();
+		sendTask.execute(uri);		
+	}
+	
 	private boolean checkPlayServices(){
 		try
 		{
@@ -250,24 +271,47 @@ public class MapActivity extends FragmentActivity implements
 
 	}
 	
+	public void addReportedLocation(Location location, String title, String userid){
+		
+		if( reportedLocations != null){
+			ReportedPlace place = new ReportedPlace(location);
+			place.setTitle(title);
+			place.setUserID(userid);
+			reportedLocations.add(place);
+		}
+	}
+	
 	private void showReportedPlace(Location location, String title, String userid){
-		showMarker(location, title, "Reported by " + userid, BitmapDescriptorFactory.HUE_ROSE);
+		
+		userid = "fb:1538657552";
+		
+		String tokens[] = userid.split(":");
+		if( tokens.length > 1 
+				&& tokens[0].contains("fb"))
+		{
+			GetFBProfileTask task = new GetFBProfileTask(location, title);
+			try{
+			 
+				// This triggers the sequence of tasks for getting username and picture.
+				// At the end, the last task is adding marker with these values to the mapview
+				task.execute(tokens[1]);
+
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+		}
+		
 	}
 	
 	private void showME(Location location){
-		
-//		Location tempLoc = new Location("");
-//		tempLoc.setLatitude(32.072072072);
-//		tempLoc.setLongitude(34.871628036);
-		//showMarker(tempLoc, "She is there", "", BitmapDescriptorFactory.HUE_RED);
-
-		//String currentLanguage = Locale.getDefault().getLanguage();
 		
 		String youAreHere =  getResources().getString(R.string.you_are_here);
 		String saySomething = getResources().getString(R.string.say_something);
 		showMarker(location, 
 				youAreHere, 
-				saySomething, BitmapDescriptorFactory.HUE_AZURE);
+				saySomething, 
+				BitmapDescriptorFactory.HUE_AZURE,
+				null);
 	}
 	
 	@Override 
@@ -286,7 +330,12 @@ public class MapActivity extends FragmentActivity implements
 		Toast.makeText(this, place.getDescription(), Toast.LENGTH_SHORT).show(); 
 	} 
 	
-	private void showMarker(Location location, String title, String snippet,  float color){
+	private void showMarker(Location location, 
+							String title, 
+							String snippet,  
+							float color,
+							final Bitmap userPicture)
+	{
 		if( location == null ) {
 			Log.i(TAG, "Location passed to showMarker() is invalid");
 			return;
@@ -313,6 +362,11 @@ public class MapActivity extends FragmentActivity implements
 			public View getInfoContents(Marker marker) {
 					
 				View content = getLayoutInflater().inflate(R.layout.infoview, null);
+				
+				if( userPicture != null) {
+					ImageView imageView = (ImageView)content.findViewById(R.id.ivInfoWindowMain);
+					imageView.setImageBitmap(userPicture);
+				}
 				
 				TextView info = ((TextView) content.findViewById(R.id.txtInfoWindowTitle));
 				if( info != null) {
@@ -349,7 +403,6 @@ public class MapActivity extends FragmentActivity implements
 		meMarker.showInfoWindow();	
 	}
 	
-	
 	private class CallPlaceDetails extends AsyncTask<String, //the type of the parameters sent to the task upon execution.  
 												Object, // the type of the progress units published during the background computation. 
 												String> // the type of the result of the background computation. 
@@ -381,14 +434,14 @@ public class MapActivity extends FragmentActivity implements
 				showMarker(location, 
 					PlaceDescription, 
 					"", 
-					BitmapDescriptorFactory.HUE_RED);
+					BitmapDescriptorFactory.HUE_RED,
+					null);
 
 			}catch(Exception ex){ 
 
-		String strMessage = ex.getMessage(); 
-		strMessage.trim(); 
-		ex.printStackTrace(); 
-		} 
+				Log.e(TAG, ex.getMessage()); 
+				ex.printStackTrace(); 
+			} 
 
 		} 
 
@@ -416,8 +469,7 @@ public class MapActivity extends FragmentActivity implements
 				return jsonResults.toString(); 
 
 			} catch(Exception ex) { 
-				String strMessage = ex.getMessage(); 
-				strMessage.trim(); 
+				Log.e(TAG, ex.getMessage()); 
 				ex.printStackTrace(); 
 				
 				return ""; 
@@ -426,7 +478,6 @@ public class MapActivity extends FragmentActivity implements
 		} 
 
 	}
-
 
 	@Override
 	public void onLocationChanged(Location location) {
@@ -467,16 +518,6 @@ public class MapActivity extends FragmentActivity implements
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}		
-	}
-
-	@Override
-	public void onStart() {
-		super.onStart();
-	}
-	
-	@Override
-	public void onResume() {
-		super.onResume();
 	}
 	
 	@Override
@@ -532,6 +573,123 @@ public class MapActivity extends FragmentActivity implements
 		
 	}
 
+	private class GetFBPictureProfileTask extends AsyncTask<String, Object, Bitmap> 
+	{
+		private String username = "";
+		Location location;
+		String title;
+		
+		public GetFBPictureProfileTask(String username, Location loc, String title){
+			this.username = username;
+			this.location = loc;
+			this.title = title;
+		}
+		
+		// This method is called on main thread UI
+		@Override 
+		protected void onPostExecute(Bitmap result) { 
+		 
+			if( result != null ){
+			
+				int width = result.getWidth();
+				
+				showMarker(location, title, 
+						"Reported by " + username, 
+						BitmapDescriptorFactory.HUE_ROSE,
+						result);
+			}
+		}
+		
+		@Override
+		protected Bitmap doInBackground(String... params) {
+			  
+			URL fbAvatarUrl = null;
+			Bitmap fbAvatarBitmap = null;
+			
+			try{
+				  
+				String userid = params[0];
+				  
+				fbAvatarUrl = new URL("https://graph.facebook.com/"+userid+"/picture?type=small");
+				fbAvatarBitmap = BitmapFactory.decodeStream(fbAvatarUrl.openConnection().getInputStream());
+
+			}catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+				
+			return fbAvatarBitmap;
+		}
+	}
+	
+	private class GetFBProfileTask extends AsyncTask<String, Object, String> 
+	{ 
+		private String userid = "";
+		Location location;
+		String title;
+		
+		public GetFBProfileTask(Location loc, String title){
+			this.location = loc;
+			this.title = title;
+		}
+		
+		// This method is called on main thread UI, so it's safe to start new task here
+		@Override 
+		protected void onPostExecute(String result) { 
+			
+			try{
+				JSONObject jsonObj = new JSONObject(result.toString()); 
+				String username = jsonObj.getString("name"); 
+				
+				GetFBPictureProfileTask pictureTask = new GetFBPictureProfileTask(username, location, title);
+				pictureTask.execute(userid);
+				
+			}catch(Exception ex){ 
+	
+				Log.e(TAG, ex.getMessage()); 
+				ex.printStackTrace(); 
+			} 
+		}
+
+		@Override
+		protected String doInBackground(String... params) {
+		
+			URL url = null;
+			HttpURLConnection conn = null; 
+			
+			try{
+			
+				userid = params[0];
+				
+				//fbAvatarUrl = new URL("https://graph.facebook.com/"+userid+"/picture?type=small");
+				url = new URL("https://graph.facebook.com/"+userid);
+				
+				conn = (HttpURLConnection) url.openConnection(); 
+				InputStreamReader in = new InputStreamReader(conn.getInputStream()); 
+				
+				StringBuilder jsonResults = new StringBuilder(); 
+				
+				// Load the results into a StringBuilder 
+				int read; 
+				char[] buff = new char[1024]; 
+				while ((read = in.read(buff)) != -1) { 
+					jsonResults.append(buff, 0, read);	 
+				} 
+
+				return jsonResults.toString(); 
+			
+			}catch(Exception ex) { 
+				Log.e(TAG, ex.getMessage()); 
+				ex.printStackTrace(); 
+				
+				return ""; 
+			}
+
+		}
+	}
+
+	
 	class SendMessageAsyncTask extends AsyncTask<String, String, String> {
 
 		@Override
