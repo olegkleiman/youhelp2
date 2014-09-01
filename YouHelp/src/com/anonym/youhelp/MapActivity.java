@@ -7,6 +7,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Locale;
 
 import org.apache.http.HttpResponse;
@@ -36,6 +37,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import android.support.v4.app.FragmentActivity;
 import android.text.SpannableString;
+import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.annotation.SuppressLint;
@@ -51,8 +53,6 @@ import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ImageView;
@@ -74,6 +74,7 @@ public class MapActivity extends FragmentActivity implements
 	
 	private GoogleMap gMap;
 	private LocationClient locationClient;
+	private HashMap<Marker, String> markedPlaces = new HashMap<Marker, String>();
 	private ArrayList<ReportedPlace> reportedLocations = new ArrayList<ReportedPlace>();
 	private static final String TAG = "com.anonym.youhelp.mapactivity";
 	private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
@@ -127,28 +128,39 @@ public class MapActivity extends FragmentActivity implements
 			@Override 
 			public void onInfoWindowClick(Marker marker) { 
 			 
-				LatLng destination = marker.getPosition(); 
-				String snippet = marker.getSnippet(); 
-				snippet.trim(); 
-				 
-				// demo primarily for emulator 
-				if( myLocation.getLatitude() == 0  
-					|| myLocation.getLongitude() == 0) {  
-						myLocation.setLatitude(Double.parseDouble("32.0816110")); 
-						myLocation.setLongitude(Double.parseDouble("34.7827041")); 
-				} 
-				 
-				LatLng myLatLng = new LatLng(myLocation.getLatitude(), myLocation.getLongitude()); 
-				 
-				GMapV2Direction md = new GMapV2Direction(); 
-				md.drawDirectitions(gMap, myLatLng, destination,  
-				GMapV2Direction.MODE_DRIVING, 
-				// TODO : detect used language 
-				// List of supported languages : https://spreadsheets.google.com/pub?key=p9pdwsai2hDMsLkXsoM05KQ&gid=1); 
-				"iw");  
-				
-				// Send Notification
-				SendNotification();
+				if( marker.getSnippet().isEmpty() ) {
+
+					LatLng destination = marker.getPosition(); 
+					String snippet = marker.getSnippet(); 
+					snippet.trim(); 
+					 
+					// demo primarily for emulator 
+					if( myLocation.getLatitude() == 0  
+						|| myLocation.getLongitude() == 0) {  
+							myLocation.setLatitude(Double.parseDouble("32.0816110")); 
+							myLocation.setLongitude(Double.parseDouble("34.7827041")); 
+					} 
+					 
+					LatLng myLatLng = new LatLng(myLocation.getLatitude(), myLocation.getLongitude()); 
+					 
+					GMapV2Direction md = new GMapV2Direction(); 
+					md.drawDirectitions(gMap, myLatLng, destination,  
+					GMapV2Direction.MODE_DRIVING, 
+					// TODO : detect used language 
+					// List of supported languages : https://spreadsheets.google.com/pub?key=p9pdwsai2hDMsLkXsoM05KQ&gid=1); 
+					"iw");  
+					
+					// Send Notification
+					SendNotification();
+				}
+				else{
+					
+					Intent intent = new Intent(MapActivity.this, ChatActivity.class);
+					String userid = markedPlaces.get(marker);
+					intent.putExtra("userid", userid);
+					startActivity(intent);
+				}
+					
 			} 
 			
 		});
@@ -183,7 +195,7 @@ public class MapActivity extends FragmentActivity implements
 		String serviceURL = getString(R.string.send_toast_service_url);
 		StringBuilder sb = new StringBuilder(serviceURL); 
 		sb.append("?title=");
-		sb.append("Ride");
+		sb.append(TextUtils.htmlEncode("Ride"));
   	 	
 		sb.append("&subtitle=");
 		
@@ -203,7 +215,7 @@ public class MapActivity extends FragmentActivity implements
 		
 		String uri = sb.toString();
 	 
-		SendMessageAsyncTask sendTask = new SendMessageAsyncTask();
+		SendMessageAsyncTask sendTask = new SendMessageAsyncTask(this);
 		sendTask.execute(uri);		
 	}
 	
@@ -283,7 +295,7 @@ public class MapActivity extends FragmentActivity implements
 	
 	private void showReportedPlace(Location location, String title, String userid){
 		
-		userid = "fb:100000013311320";
+		//userid = "fb:100000013311320";
 		
 		String tokens[] = userid.split(":");
 		if( tokens.length > 1 
@@ -304,14 +316,7 @@ public class MapActivity extends FragmentActivity implements
 	}
 	
 	private void showME(Location location){
-		
-		String youAreHere =  getResources().getString(R.string.you_are_here);
-		String saySomething = getResources().getString(R.string.say_something);
-		showMarker(location, 
-				youAreHere, 
-				saySomething, 
-				BitmapDescriptorFactory.HUE_AZURE,
-				null);
+		PositionMap(location);
 	}
 	
 	@Override 
@@ -330,23 +335,11 @@ public class MapActivity extends FragmentActivity implements
 		Toast.makeText(this, place.getDescription(), Toast.LENGTH_SHORT).show(); 
 	} 
 	
-	private void showMarker(Location location, 
-							String title, 
-							String snippet,  
-							float color,
-							final Bitmap userPicture)
-	{
-		if( location == null ) {
-			Log.i(TAG, "Location passed to showMarker() is invalid");
-			return;
-		}else if( gMap == null ) {
-			Log.i(TAG, "Map is not ready when calling to showMarker()");
-			return;
-		}
-	
-		final LatLng ME = new LatLng(location.getLatitude(),
-									location.getLongitude());
+	private void PositionMap(Location location){
 		
+		final LatLng ME = new LatLng(location.getLatitude(),
+				location.getLongitude());
+
 		final int zoomLevel = 16;
 		// Move the camera instantly to the current location with a zoom.
 		gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(ME, zoomLevel));
@@ -355,6 +348,26 @@ public class MapActivity extends FragmentActivity implements
 		gMap.animateCamera(CameraUpdateFactory.zoomIn());
 		// Zoom out to specified zoom level, animating with a duration of 2 seconds.
 		gMap.animateCamera(CameraUpdateFactory.zoomTo(zoomLevel), 2000, null);
+	}
+	
+	private Marker showMarker(Location location, 
+							String title, 
+							String snippet,  
+							float color,
+							final Bitmap userPicture)
+	{
+		if( location == null ) {
+			Log.i(TAG, "Location passed to showMarker() is invalid");
+			return null;
+		}else if( gMap == null ) {
+			Log.i(TAG, "Map is not ready when calling to showMarker()");
+			return null;
+		}
+	
+		PositionMap(location);
+		
+		final LatLng latLng = new LatLng(location.getLatitude(),
+										 location.getLongitude());
 		
 		gMap.setInfoWindowAdapter( new InfoWindowAdapter() {
 
@@ -395,12 +408,14 @@ public class MapActivity extends FragmentActivity implements
 			}
 		});
 		
-		Marker meMarker = gMap.addMarker(new MarkerOptions()
-        		.position(ME)
+		Marker marker = gMap.addMarker(new MarkerOptions()
+        		.position(latLng)
         		.title(title)
         		.snippet(snippet)
         		.icon(BitmapDescriptorFactory.defaultMarker(color)));
-		meMarker.showInfoWindow();	
+		marker.showInfoWindow();	
+		
+		return marker;
 	}
 	
 	private class CallPlaceDetails extends AsyncTask<String,Object,String>
@@ -573,12 +588,13 @@ public class MapActivity extends FragmentActivity implements
 
 	private class GetFBPictureProfileTask extends AsyncTask<String, Object, Bitmap> 
 	{
-		private String username = "";
+		private String username = "", userid = "";
 		Location location;
 		String title;
 		
 		public GetFBPictureProfileTask(String username, Location loc, String title){
 			this.username = username;
+			
 			this.location = loc;
 			this.title = title;
 		}
@@ -588,13 +604,12 @@ public class MapActivity extends FragmentActivity implements
 		protected void onPostExecute(Bitmap result) { 
 		 
 			if( result != null ){
-			
-				int width = result.getWidth();
 				
-				showMarker(location, title, 
-						"Reported by " + username, 
-						BitmapDescriptorFactory.HUE_ROSE,
-						result);
+				Marker marker = showMarker(location, title, 
+											"From " + username, 
+											BitmapDescriptorFactory.HUE_ROSE,
+											result);
+				markedPlaces.put(marker, userid);
 			}
 		}
 		
@@ -606,7 +621,7 @@ public class MapActivity extends FragmentActivity implements
 			
 			try{
 				  
-				String userid = params[0];
+				userid = params[0];
 				  
 				fbAvatarUrl = new URL("https://graph.facebook.com/"+userid+"/picture?type=small");
 				fbAvatarBitmap = BitmapFactory.decodeStream(fbAvatarUrl.openConnection().getInputStream());
@@ -660,7 +675,6 @@ public class MapActivity extends FragmentActivity implements
 			
 				userid = params[0];
 				
-				//fbAvatarUrl = new URL("https://graph.facebook.com/"+userid+"/picture?type=small");
 				url = new URL("https://graph.facebook.com/"+userid);
 				
 				conn = (HttpURLConnection) url.openConnection(); 
@@ -688,13 +702,27 @@ public class MapActivity extends FragmentActivity implements
 	}
 
 	
-	class SendMessageAsyncTask extends AsyncTask<String, String, String> {
+	class SendMessageAsyncTask extends AsyncTask<String, String, Boolean> {
 
+		public SendMessageAsyncTask(Context ctx){
+			context = ctx;
+		}
+		
+		Context context;
+		Exception error;
+		
 		@Override
-		protected String doInBackground(String... uri) {
+	    protected void onPostExecute(Boolean result) {
+		
+			if( !result  && error != null ) {
+				Toast.makeText(context, error.getMessage(), Toast.LENGTH_LONG).show(); 
+			}
+		}
+		
+		@Override
+		protected Boolean doInBackground(String... uri) {
 
 			HttpClient httpclient = new DefaultHttpClient();
-			String responseString = null;
 
 	   	 	try{
 	   	 		
@@ -708,18 +736,23 @@ public class MapActivity extends FragmentActivity implements
 	   	 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 	   	 			response.getEntity().writeTo(out);
 	   	 			out.close();
-	   	 			responseString = out.toString();
+	   	 			
+	   	 			String responseString = out.toString();
+	   	 			responseString.trim();
+	   	 			
+	   	 			return true;
 	   	 		}else{
 	   	 			//Closes the connection.
 	   	 			response.getEntity().getContent().close();
-	   	 			throw new IOException(statusLine.getReasonPhrase());
+	   	 			error = new IOException(statusLine.getReasonPhrase());
+	   	 			
+	   	 			return false;
 	   	 		}
 	   	 	}catch(Exception e){
-   	 		
    	        	e.printStackTrace();
+   	        	return false;
    	        }
-	   	 	
-	   	 	return responseString;
+
 		}
 		
 	}

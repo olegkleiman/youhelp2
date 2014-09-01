@@ -1,44 +1,50 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-  android:layout_width="wrap_content"
+  android:layout_width="match_parent"
   android:layout_height="wrap_content"
   android:orientation="horizontal">
-  
-  <ImageView
-    android:id="@+id/ivInfoWindowMain"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_marginRight="5dp"
-    android:adjustViewBounds="true"
-    android:src="@drawable/ic_launcher">
-  </ImageView>
 
-  <LinearLayout
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:orientation="vertical">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
 
-      <TextView
-		  android:id="@+id/txtInfoWindowTitle"
-	      android:layout_width="wrap_content"
-	      android:layout_height="wrap_content"
-	      android:layout_gravity="center_horizontal"
-	      android:ellipsize="end"
-	      android:textDirection="anyRtl"
-	      android:gravity="right"
-	      android:textColor="#ff000000"
-	      android:textSize="14sp"
-	      android:textStyle="bold"/>
+        <ImageView
+            android:id="@+id/ivInfoWindowMain"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_marginRight="5dp"
+            android:adjustViewBounds="true"
+            android:src="@drawable/ic_launcher" />
 
-    <TextView
-	      android:id="@+id/txtInfoWindowEventType"
-	      android:layout_width="wrap_content"
-	      android:layout_height="wrap_content"
-	      android:ellipsize="end"
-	      android:textDirection="anyRtl"
-	      android:gravity="right"
-	      android:textColor="#ff7f7f7f"
-	      android:textSize="14sp"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="6dp"
+            android:gravity="left|center"
+            android:orientation="vertical" >
 
-  </LinearLayout>
+            <TextView
+                android:id="@+id/txtInfoWindowTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="top|left"
+                android:textColor="@color/title_color"
+                android:textDirection="anyRtl"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txtInfoWindowEventType"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:ellipsize="end"
+                android:gravity="bottom|left"
+                android:textColor="@color/user_color"
+                android:textDirection="anyRtl"
+                android:textSize="14sp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
 
 </LinearLayout>

@@ -33,13 +33,15 @@
     <string name="AllowSendPhone">Allow on send:</string>
     <string name="title_activity_main">MainActivity</string>
     <string name="title_activity_hazard">HazardActivity</string>
-	<string name="your_message">Your Message:</string>
-	<string name="maps_app">Maps App:</string>
-	
-	<string-array name="mapsapps_array">
-	    <item>Waze</item>
+    <string name="your_message">Your Message:</string>
+    <string name="maps_app">Maps App:</string>
+
+    <string-array name="mapsapps_array">
+        <item>Waze</item>
         <item>Google Maps</item>
         <item>Internal</item>
     </string-array>
-    
+
+    <string name="title_activity_chat">ChatActivity</string>
+
 </resources>
