@@ -283,7 +283,7 @@ public class MapActivity extends FragmentActivity implements
 	
 	private void showReportedPlace(Location location, String title, String userid){
 		
-		userid = "fb:1538657552";
+		userid = "fb:100000013311320";
 		
 		String tokens[] = userid.split(":");
 		if( tokens.length > 1 
@@ -403,9 +403,7 @@ public class MapActivity extends FragmentActivity implements
 		meMarker.showInfoWindow();	
 	}
 	
-	private class CallPlaceDetails extends AsyncTask<String, //the type of the parameters sent to the task upon execution.  
-												Object, // the type of the progress units published during the background computation. 
-												String> // the type of the result of the background computation. 
+	private class CallPlaceDetails extends AsyncTask<String,Object,String>
 	{ 
 		private String PlaceDescription;
 
