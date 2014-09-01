@@ -67,10 +67,10 @@ public class AzureNotificationsHandler extends NotificationsHandler {
 				+ sharedPrefs.getString("userid", "") ;
 		
 		// Do not receive from yourself
-		if( myUserid.length() != 0
-			&& myUserid.equals(sentUserid) ) { // current user == sending user
-				return;
-		}
+//		if( myUserid.length() != 0
+//			&& myUserid.equals(sentUserid) ) { // current user == sending user
+//				return;
+//		}
 		
 		persistMessage(context, title, sentUserid);
 	    

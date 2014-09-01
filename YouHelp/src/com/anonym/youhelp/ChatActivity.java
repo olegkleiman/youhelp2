@@ -2,6 +2,8 @@ package com.anonym.youhelp;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Date;
 import java.util.List;
 
@@ -18,14 +20,15 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -36,6 +39,8 @@ public class ChatActivity extends Activity {
 	private String myUserID;
 	private YHDataSource datasource;
 	private ChatAdapter chatAdapter;
+	
+	ImageView profilePictureView = null;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +61,10 @@ public class ChatActivity extends Activity {
 		
 		SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 		myUserID = sharedPrefs.getString("prefUsername", "");
+		
+		profilePictureView = (ImageView)findViewById(R.id.imageProfilePicture);
+		GetProfileTask task = new GetProfileTask(); 
+		task.execute(toUserid); 
 		
 		ListView messagesList = (ListView)findViewById(R.id.lvChatRoom);
 		
@@ -193,4 +202,38 @@ public class ChatActivity extends Activity {
 		}
 	}
 
-}
+	private class GetProfileTask extends AsyncTask<String, Object, Bitmap> 
+	{ 
+		// This method is called on main thread UI
+		@Override 
+		protected void onPostExecute(Bitmap result) { 
+		
+			if( result != null 
+				&& profilePictureView != null )
+			profilePictureView.setImageBitmap(result);
+		}
+
+		@Override
+		protected Bitmap doInBackground(String... params) {
+		
+			URL fbAvatarUrl = null;
+			Bitmap fbAvatarBitmap = null;
+			
+			try{
+			
+			String userid = params[0];
+			
+			fbAvatarUrl = new URL("https://graph.facebook.com/"+userid+"/picture?type=normal");
+			fbAvatarBitmap = BitmapFactory.decodeStream(fbAvatarUrl.openConnection().getInputStream());
+			
+			}catch (MalformedURLException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+			return fbAvatarBitmap;
+			}
+		}
+	
+	}
