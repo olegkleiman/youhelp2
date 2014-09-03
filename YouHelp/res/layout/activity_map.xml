@@ -14,7 +14,6 @@
 
         <AutoCompleteTextView
             android:id="@+id/autocomplete"
-            android:textSize="@dimen/search_results_text_size"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 

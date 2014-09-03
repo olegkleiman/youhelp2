@@ -129,7 +129,7 @@ public class MapActivity extends FragmentActivity implements
 			@Override 
 			public void onInfoWindowClick(Marker marker) { 
 			 
-				if( marker.getSnippet().isEmpty() ) {
+				if( marker.getSnippet().contains("there")) {
 
 					LatLng destination = marker.getPosition(); 
 					String snippet = marker.getSnippet(); 
@@ -443,9 +443,13 @@ public class MapActivity extends FragmentActivity implements
 				Location location = new Location("");
 				location.setLatitude(Double.parseDouble(strLat));
 				location.setLongitude(Double.parseDouble(strLon));
+				
+				String[] tokens = PlaceDescription.split(",");
+				
+				gMap.clear(); // only one ride destination is visible at time
 				showMarker(location, 
-					PlaceDescription, 
-					"", 
+					tokens[0], 
+					"Tap to share ride to there", 
 					BitmapDescriptorFactory.HUE_RED,
 					null);
 				
@@ -454,7 +458,7 @@ public class MapActivity extends FragmentActivity implements
 				GMapV2Direction md = new GMapV2Direction(); 
 				
 				md.drawDirectitions(gMap, myLatLng, destination,  
-									GMapV2Direction.MODE_DRIVING, 
+									GMapV2Direction.MODE_WALKING, // .MODE_DRIVING, 
 									// TODO : detect used language 
 									// List of supported languages : https://spreadsheets.google.com/pub?key=p9pdwsai2hDMsLkXsoM05KQ&gid=1); 
 									"iw");  
