@@ -130,8 +130,6 @@ public class MapActivity extends FragmentActivity implements
 			public void onInfoWindowClick(Marker marker) { 
 			 
 				if( marker.getSnippet().contains("there")) {
-
-					LatLng destination = marker.getPosition(); 
 					String snippet = marker.getSnippet(); 
 					snippet.trim(); 
 					 

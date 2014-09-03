@@ -1,7 +1,11 @@
 package com.anonym.youhelp;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Locale;
 
 import org.apache.http.HttpResponse;
@@ -16,22 +20,32 @@ import org.apache.http.protocol.HttpContext;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Bitmap;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.Toast;
 
 public class HazardActivity extends Activity {
 
 	private Location currentLocation;
 	private String userid;
+	
+	static final int REQUEST_IMAGE_CAPTURE = 1;
+	ImageView mImageView;
+	String mCurrentPhotoPath;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -47,11 +61,13 @@ public class HazardActivity extends Activity {
 
 		currentLocation = locationManager.getLastKnownLocation(locationProvider);
 		
-		ImageButton btnSend = (ImageButton) findViewById(R.id.btnSend);
+
+		
+		ImageView btnSend = (ImageView) findViewById(R.id.btnSend);
 		btnSend.setOnClickListener(new OnClickListener(){
 
 			@Override
-			public void onClick(View arg0) {
+			public void onClick(View view) {
 				
 				if( isNetworkAvailable() ) {
 					
@@ -97,8 +113,67 @@ public class HazardActivity extends Activity {
 			}
 			
 		});
+		
+		mImageView = (ImageView) findViewById(R.id.btnPhoto);
+		mImageView.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View view) {
+
+			    Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+			    if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+			    	
+			        // Create the File where the photo should go
+			        File photoFile = null;
+			        try {
+			            photoFile = createImageFile();
+			        } catch (IOException ex) {
+			            // Error occurred while creating the File
+			           
+			        }
+		            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,
+		                    Uri.fromFile(photoFile));
+			    	
+			        startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+			    }
+				
+			}
+			
+		});
 	}
 
+	private File createImageFile() throws IOException {
+	    // Create an image file name
+	    String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+	    String imageFileName = "JPEG_" + timeStamp + "_";
+	    File storageDir = Environment.getExternalStoragePublicDirectory(
+	            Environment.DIRECTORY_PICTURES);
+	    File image = File.createTempFile(
+	        imageFileName,  /* prefix */
+	        ".jpg",         /* suffix */
+	        storageDir      /* directory */
+	    );
+
+	    // Save a file: path for use with ACTION_VIEW intents
+	    mCurrentPhotoPath = "file:" + image.getAbsolutePath();
+	    return image;
+	}
+	
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+	    if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+	        
+	    	if( data != null) {
+		    	Bundle extras = data.getExtras();
+		        Bitmap imageBitmap = (Bitmap) extras.get("data");
+		        
+		        mImageView = (ImageView) findViewById(R.id.imageViewHazardPicture);
+		        mImageView.setImageBitmap(imageBitmap);
+	    	}
+
+	    }
+	}
+	
     private boolean isNetworkAvailable() {
     	
     	ConnectivityManager connectivityManager 

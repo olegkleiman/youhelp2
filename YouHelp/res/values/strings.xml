@@ -48,4 +48,6 @@
 
     <string name="title_activity_chat">ChatActivity</string>
 
+    <string name="photo_send_desc">photo send description</string>
+
 </resources>
