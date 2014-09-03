@@ -141,15 +141,6 @@ public class MapActivity extends FragmentActivity implements
 							myLocation.setLatitude(Double.parseDouble("32.0816110")); 
 							myLocation.setLongitude(Double.parseDouble("34.7827041")); 
 					} 
-					 
-					LatLng myLatLng = new LatLng(myLocation.getLatitude(), myLocation.getLongitude()); 
-					 
-					GMapV2Direction md = new GMapV2Direction(); 
-					md.drawDirectitions(gMap, myLatLng, destination,  
-					GMapV2Direction.MODE_DRIVING, 
-					// TODO : detect used language 
-					// List of supported languages : https://spreadsheets.google.com/pub?key=p9pdwsai2hDMsLkXsoM05KQ&gid=1); 
-					"iw");  
 					
 					// Send Notification
 					SendNotification();
@@ -457,6 +448,16 @@ public class MapActivity extends FragmentActivity implements
 					"", 
 					BitmapDescriptorFactory.HUE_RED,
 					null);
+				
+				LatLng myLatLng = new LatLng(myLocation.getLatitude(), myLocation.getLongitude()); 
+				LatLng destination = new LatLng(location.getLatitude(), location.getLongitude()); 
+				GMapV2Direction md = new GMapV2Direction(); 
+				
+				md.drawDirectitions(gMap, myLatLng, destination,  
+									GMapV2Direction.MODE_DRIVING, 
+									// TODO : detect used language 
+									// List of supported languages : https://spreadsheets.google.com/pub?key=p9pdwsai2hDMsLkXsoM05KQ&gid=1); 
+									"iw");  
 
 			}catch(Exception ex){ 
 
