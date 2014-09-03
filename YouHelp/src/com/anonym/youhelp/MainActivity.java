@@ -5,6 +5,8 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
@@ -13,6 +15,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.graphics.Point;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
@@ -22,18 +25,21 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
 import android.telephony.SmsManager;
 import android.util.Log;
+import android.view.Display;
 import android.view.View;
+import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationUtils;
+import android.view.animation.Interpolator;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
-import com.google.android.gms.gcm.*;
-import com.microsoft.windowsazure.messaging.NotificationHub;
-import com.microsoft.windowsazure.notifications.NotificationsHandler;
-import com.microsoft.windowsazure.notifications.NotificationsManager;
+
 import com.facebook.AppEventsLogger;
+import com.google.android.gms.gcm.GoogleCloudMessaging;
+import com.microsoft.windowsazure.messaging.NotificationHub;
+import com.microsoft.windowsazure.notifications.NotificationsManager;
 
 public class MainActivity extends FragmentActivity implements AnimationListener {
 
@@ -45,13 +51,15 @@ public class MainActivity extends FragmentActivity implements AnimationListener 
 	private GoogleCloudMessaging gcm;
 	private NotificationHub hub;
 	
+	LinearLayout mainLayout;
+	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_layout);
         
         // Set background for layout
-        LinearLayout mainLayout = (LinearLayout)findViewById(R.id.main_layout);
+        mainLayout = (LinearLayout)findViewById(R.id.main_layout);
         mainLayout.setBackgroundResource(R.drawable.background);
         
 		SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
@@ -115,7 +123,56 @@ public class MainActivity extends FragmentActivity implements AnimationListener 
 			
 			@Override
 			public void onClick(View v) {
-				imageHelp.startAnimation(animationMove);
+				
+				String tag = (String)mainLayout.getTag();
+				if( tag == null || 
+						tag.contains("1") )
+				{
+					float xOffset = getChangeFactorX();	
+					ObjectAnimator animationX =
+							createFloatObjectAnimator(imageHelp,"translationX", 
+														0, // repeat count
+														1000, // duration
+														false, // no reverse
+														0, // from
+														xOffset); // to
+					float yOffset = getChangeFactorY();
+					ObjectAnimator animationY =
+							createFloatObjectAnimator(imageHelp,"translationY", 0, 1000, false, 0, yOffset);
+	
+					AnimatorSet animSetXY = new AnimatorSet();
+					animSetXY.playTogether(animationX, animationY);
+					animSetXY.start();
+					
+					mainLayout.setTag("2");
+					
+					// Dummy animation
+					imageHelp.startAnimation(animationMove);
+					
+				} else {
+					float xOffset = getChangeFactorX();	
+					ObjectAnimator animationX =
+							createFloatObjectAnimator(imageHelp,"translationX", 
+														0, // repeat count
+														1000, // duration
+														true, // no reverse
+														0, // from
+														xOffset); // to
+					
+					float yOffset = getChangeFactorY();
+					ObjectAnimator animationY =
+							createFloatObjectAnimator(imageHelp,"translationY", 0, 1000, true, 0, yOffset);
+	
+					AnimatorSet animSetXY = new AnimatorSet();
+					animSetXY.playTogether(animationX, animationY);
+					animSetXY.start();
+					
+					mainLayout.setTag("1");
+					
+					// Dummy animation
+					imageHelp.startAnimation(animationMove);
+				}
+				
 				
 			}
 		});
@@ -238,6 +295,80 @@ public class MainActivity extends FragmentActivity implements AnimationListener 
 		});
     }
 
+    public class ReverseInterpolator implements Interpolator {
+        @Override
+        public float getInterpolation(float paramFloat) {
+            return Math.abs(paramFloat -1f);
+        }
+    }
+    
+    private ObjectAnimator createFloatObjectAnimator(View view, 
+			   String propertyName, 
+			   int repeatCount,
+			   int duration,
+			   boolean isReverse,
+			   float... values){
+
+		ObjectAnimator animation = ObjectAnimator.ofFloat(view, 
+							propertyName, 
+							values[0], values[1]);
+		
+		animation.setDuration(duration);
+		animation.setRepeatCount(repeatCount);
+		
+		Interpolator interpolator = isReverse ? 
+				new ReverseInterpolator() :
+				new 	AccelerateDecelerateInterpolator(); 
+		
+		animation.setInterpolator(interpolator);
+		
+		return animation;
+    }
+
+	// This factor depends on background image scratching
+	private float getChangeFactorX() {
+		// If not in Activity, use this:
+		//final WindowManager wm = (WindowManager)MainActivity.this.getSystemService(Context.WINDOW_SERVICE);
+		//wm.getDefaultDisplay().getSize(size);
+		
+		Display display = getWindowManager().getDefaultDisplay();
+		Point size = new Point();
+		display.getSize(size);
+		int width = size.x;
+		int height = size.y;
+		
+		float aspectRatio = (float)height / width;
+		
+		int initialAspect = 28; // percents
+		// Tested models : Galaxy Note II : 1.7
+		//				   Nexus 7 (2012) : 1.52
+		
+		if( aspectRatio >= 1.7 ) 
+		initialAspect = 36;
+		
+		return initialAspect * width / 100;
+	}
+
+	private float getChangeFactorY() {
+
+		Display display = getWindowManager().getDefaultDisplay();		
+		Point size = new Point();
+		display.getSize(size);
+		int width = size.x;
+		int height = size.y;
+		
+		float aspectRatio = (float)height / width;
+		
+		int initialAspect = 11; // percents
+		// Tested models : Galaxy Note II : 1.7
+		//				   Nexus 7 (2012) : 1.52
+		
+		if( aspectRatio >= 1.7 ) 
+		initialAspect = 14;
+		
+		return initialAspect * height / 100;
+	}
+    
     private void SendSmsWithManager(List<String> smsNumbers, String message){
 		
     	try{
@@ -413,9 +544,9 @@ public class MainActivity extends FragmentActivity implements AnimationListener 
 	@Override
 	public void onAnimationEnd(Animation animation) {
         
-        LinearLayout mainLayout = (LinearLayout)findViewById(R.id.main_layout);
+        //LinearLayout mainLayout = (LinearLayout)findViewById(R.id.main_layout);
         mainLayout.setBackgroundResource(R.drawable.background2);
-	
+
         final ImageView flatTireImageView = (ImageView)findViewById(R.id.imageViewFaltTire);
         flatTireImageView.setVisibility(View.VISIBLE);
         
