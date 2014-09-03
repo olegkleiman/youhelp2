@@ -36,6 +36,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+
 import com.facebook.AppEventsLogger;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.microsoft.windowsazure.messaging.NotificationHub;
@@ -544,17 +545,31 @@ public class MainActivity extends FragmentActivity implements AnimationListener 
 	@Override
 	public void onAnimationEnd(Animation animation) {
         
-        //LinearLayout mainLayout = (LinearLayout)findViewById(R.id.main_layout);
-        mainLayout.setBackgroundResource(R.drawable.background2);
-
-        final ImageView flatTireImageView = (ImageView)findViewById(R.id.imageViewFaltTire);
-        flatTireImageView.setVisibility(View.VISIBLE);
-        
-        final ImageView cablesImageView = (ImageView)findViewById(R.id.imageViewJamperCable);
-        cablesImageView.setVisibility(View.VISIBLE);
-        
-        final ImageView helpOtherImageView = (ImageView)findViewById(R.id.imageViewHelpOther);
-        helpOtherImageView.setVisibility(View.VISIBLE);
+		String tag = (String)mainLayout.getTag();
+		if( tag.contains("2") ) {
+	        mainLayout.setBackgroundResource(R.drawable.background2);
+	
+	        final ImageView flatTireImageView = (ImageView)findViewById(R.id.imageViewFaltTire);
+	        flatTireImageView.setVisibility(View.VISIBLE);
+	        
+	        final ImageView cablesImageView = (ImageView)findViewById(R.id.imageViewJamperCable);
+	        cablesImageView.setVisibility(View.VISIBLE);
+	        
+	        final ImageView helpOtherImageView = (ImageView)findViewById(R.id.imageViewHelpOther);
+	        helpOtherImageView.setVisibility(View.VISIBLE);
+		}
+		else if( tag.contains("1") ) {
+			mainLayout.setBackgroundResource(R.drawable.background);
+			
+	        final ImageView flatTireImageView = (ImageView)findViewById(R.id.imageViewFaltTire);
+	        flatTireImageView.setVisibility(View.INVISIBLE);
+	        
+	        final ImageView cablesImageView = (ImageView)findViewById(R.id.imageViewJamperCable);
+	        cablesImageView.setVisibility(View.INVISIBLE);
+	        
+	        final ImageView helpOtherImageView = (ImageView)findViewById(R.id.imageViewHelpOther);
+	        helpOtherImageView.setVisibility(View.INVISIBLE);
+		}
 	}
 
 	@Override
@@ -566,20 +581,39 @@ public class MainActivity extends FragmentActivity implements AnimationListener 
 	@Override
 	public void onAnimationStart(Animation animation) {
 		
-		final ImageView imageMap = (ImageView)findViewById(R.id.imageViewMap);
-  		final ImageView imageTrip = (ImageView)findViewById(R.id.imageViewTrip);
-  		final ImageView imageSettings = (ImageView)findViewById(R.id.imageViewSettings);
-  		final ImageView imageCompass = (ImageView)findViewById(R.id.imageViewCompass);
- 		final ImageView imageSOS = (ImageView)findViewById(R.id.imageViewSOS);
-  		
-		// Load and perform FadeOut animation
-        final Animation animationFadeOut = AnimationUtils.loadAnimation(this, R.anim.fadeout);
-      
-        imageMap.startAnimation(animationFadeOut);
-        imageTrip.startAnimation(animationFadeOut);
-        imageSettings.startAnimation(animationFadeOut);
-        imageCompass.startAnimation(animationFadeOut);
-        imageSOS.startAnimation(animationFadeOut);
+		String tag = (String)mainLayout.getTag();
+		if( tag.contains("2") ) {
+			final ImageView imageMap = (ImageView)findViewById(R.id.imageViewMap);
+	  		final ImageView imageTrip = (ImageView)findViewById(R.id.imageViewTrip);
+	  		final ImageView imageSettings = (ImageView)findViewById(R.id.imageViewSettings);
+	  		final ImageView imageCompass = (ImageView)findViewById(R.id.imageViewCompass);
+	 		final ImageView imageSOS = (ImageView)findViewById(R.id.imageViewSOS);
+	  		
+			// Load and perform FadeOut animation
+	        final Animation animationFadeOut = AnimationUtils.loadAnimation(this, R.anim.fadeout);
+	      
+	        imageMap.startAnimation(animationFadeOut);
+	        imageTrip.startAnimation(animationFadeOut);
+	        imageSettings.startAnimation(animationFadeOut);
+	        imageCompass.startAnimation(animationFadeOut);
+	        imageSOS.startAnimation(animationFadeOut);
+		}
+		else {
+			final ImageView imageMap = (ImageView)findViewById(R.id.imageViewMap);
+	  		final ImageView imageTrip = (ImageView)findViewById(R.id.imageViewTrip);
+	  		final ImageView imageSettings = (ImageView)findViewById(R.id.imageViewSettings);
+	  		final ImageView imageCompass = (ImageView)findViewById(R.id.imageViewCompass);
+	 		final ImageView imageSOS = (ImageView)findViewById(R.id.imageViewSOS);
+	  		
+			// Load and perform FadeIn animation
+	        final Animation animationFadeIn = AnimationUtils.loadAnimation(this, R.anim.fadein);
+	      
+	        imageMap.startAnimation(animationFadeIn);
+	        imageTrip.startAnimation(animationFadeIn);
+	        imageSettings.startAnimation(animationFadeIn);
+	        imageCompass.startAnimation(animationFadeIn);
+	        imageSOS.startAnimation(animationFadeIn);
+		}
 		
 	}
 }
