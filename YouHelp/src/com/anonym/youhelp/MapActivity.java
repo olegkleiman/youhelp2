@@ -760,6 +760,7 @@ public class MapActivity extends FragmentActivity implements
 	   	 			return false;
 	   	 		}
 	   	 	}catch(Exception e){
+	   	 		error = e;
    	        	e.printStackTrace();
    	        	return false;
    	        }

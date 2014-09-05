@@ -4,7 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -23,6 +22,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
@@ -39,20 +39,20 @@ import android.view.View.OnClickListener;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.microsoft.azure.storage.*;
-import com.microsoft.azure.storage.blob.*;
+import com.microsoft.azure.storage.CloudStorageAccount;
+import com.microsoft.azure.storage.blob.CloudBlobClient;
+import com.microsoft.azure.storage.blob.CloudBlobContainer;
+import com.microsoft.azure.storage.blob.CloudBlockBlob;
 
 public class HazardActivity extends Activity {
 
-
-	
 	private Location currentLocation;
 	private String userid;
 	
 	static final int REQUEST_IMAGE_CAPTURE = 1;
 	File photoFile = null;
 	ImageView mImageView;
-	String mCurrentPhotoPath;
+	//String mCurrentPhotoPath;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -76,7 +76,7 @@ public class HazardActivity extends Activity {
 				
 				if( isNetworkAvailable() ) {
 					
-					UploadBlobTask uploadTask = new UploadBlobTask();
+					UploadBlobTask uploadTask = new UploadBlobTask(HazardActivity.this);
 					uploadTask.execute("pictures");
 					
 					String serviceURL = getString(R.string.send_toast_service_url);
@@ -134,13 +134,20 @@ public class HazardActivity extends Activity {
 			        // Create the File where the photo should go
 			        photoFile = null;
 			        try {
-			            photoFile = createImageFile();
+			        	String[] tokens = userid.split(":");
+			        	String username = ( tokens.length > 1 ) ? tokens[1] : tokens[0];
+			            photoFile = createImageFile(username);
 			        } catch (IOException ex) {
-			            // Error occurred while creating the File
+			            
+			        	// Error occurred while creating the File
+			        	Toast.makeText(getApplicationContext(), 
+			        					ex.getMessage(), 
+			        					Toast.LENGTH_LONG).show();
+			        	
 			           
 			        }
 		            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,
-		                    Uri.fromFile(photoFile));
+		                    					Uri.fromFile(photoFile));
 			    	
 			        startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
 			    }
@@ -150,10 +157,10 @@ public class HazardActivity extends Activity {
 		});
 	}
 
-	private File createImageFile() throws IOException {
+	private File createImageFile(String userName) throws IOException {
 	    // Create an image file name
 	    String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-	    String imageFileName = "JPEG_" + timeStamp + "_";
+	    String imageFileName = userName + "_" + timeStamp;
 	    File storageDir = Environment.getExternalStoragePublicDirectory(
 	            Environment.DIRECTORY_PICTURES);
 	    File image = File.createTempFile(
@@ -163,23 +170,66 @@ public class HazardActivity extends Activity {
 	    );
 
 	    // Save a file: path for use with ACTION_VIEW intents
-	    mCurrentPhotoPath = "file:" + image.getAbsolutePath();
+	    //mCurrentPhotoPath = "file:" + image.getAbsolutePath();
 	    return image;
 	}
 	
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-	    if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-	        
-	    	if( data != null) {
-		    	Bundle extras = data.getExtras();
-		        Bitmap imageBitmap = (Bitmap) extras.get("data");
+		
+		try {
+		    if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
 		        
-		        mImageView = (ImageView) findViewById(R.id.imageViewHazardPicture);
-		        mImageView.setImageBitmap(imageBitmap);
-	    	}
+		    	if( data != null) {
+			    	Bundle extras = data.getExtras();
+			        Bitmap imageBitmap = (Bitmap) extras.get("data");
+			        
+			        mImageView = (ImageView) findViewById(R.id.imageViewHazardPicture);
+			        mImageView.setImageBitmap(imageBitmap);
+		    	}
+		    	else {
+		    		try{
 
-	    }
+			    		if( photoFile != null && photoFile.exists() ) {
+
+			    			String filePath = photoFile.getAbsolutePath();
+			    			
+			    			 // Get the dimensions of the View
+			    		    int targetW = mImageView.getWidth();
+			    		    int targetH = mImageView.getHeight();
+			    		    
+			    		    // Get the dimensions of the bitmap
+			    		    BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+			    		    bmOptions.inJustDecodeBounds = true;
+			    		    BitmapFactory.decodeFile(filePath, bmOptions);
+			    		    int photoW = bmOptions.outWidth;
+			    		    int photoH = bmOptions.outHeight;
+			    		    
+			    		    // Determine how much to scale down the image
+			    		    int scaleFactor = Math.min(photoW/targetW, photoH/targetH);
+			    		    
+			    		    // Decode the image file into a Bitmap sized to fill the View
+			    		    bmOptions.inJustDecodeBounds = false;
+			    		    bmOptions.inSampleSize = scaleFactor;
+			    		    bmOptions.inPurgeable = true;
+
+			    		    Bitmap bitmap = BitmapFactory.decodeFile(filePath, bmOptions);
+			    		    mImageView.setImageBitmap(bitmap);
+
+			    		}
+		    		} catch(Exception ex) {
+		            	Toast.makeText(getApplicationContext(), 
+		    					ex.getMessage(), 
+		    					Toast.LENGTH_LONG).show();
+		    		}
+		    	}
+	
+		    }
+		} catch(Exception ex) {
+        	Toast.makeText(getApplicationContext(), 
+					ex.getMessage(), 
+					Toast.LENGTH_LONG).show();
+		}
 	}
 	
     private boolean isNetworkAvailable() {
@@ -209,15 +259,31 @@ public class HazardActivity extends Activity {
 		return super.onOptionsItemSelected(item);
 	}
 	
-	class UploadBlobTask extends AsyncTask<String, String, Void> {
+	class UploadBlobTask extends AsyncTask<String, String, Boolean> {
 
+		Context context;
+		Exception error;
+		
 		public static final String storageConnectionString = 
 			    "DefaultEndpointsProtocol=http;" + 
 			    "AccountName=youhelpstorage;" + 
 			    "AccountKey=dtpTqukoGje8FSnSvUBc/of+6Y3FQZRi7eS2+PTanCnAglBBExnsvXjxTjZQxiROUWJbZZijlZ97WR7/l6MDMA==";
 		
+		public UploadBlobTask(Context ctx){
+			context = ctx;
+		}
+		
 		@Override
-		protected Void doInBackground(String... params) {
+	    protected void onPostExecute(Boolean result) {
+		
+			if( !result  && error != null ) {
+				String strMessage = error.getMessage();
+				Toast.makeText(context, strMessage, Toast.LENGTH_LONG).show(); 
+			}
+		}
+		
+		@Override
+		protected Boolean doInBackground(String... params) {
 			
 			try{
 				
@@ -232,26 +298,20 @@ public class HazardActivity extends Activity {
 				    
 				    // Retrieve reference to a previously created container.
 				    CloudBlobContainer container = blobClient.getContainerReference(containerName);
-				    
-		//		    // Loop over blobs within the container and output the URI to each of them.
-		//		    StringBuilder sb = new StringBuilder();
-		//		    for (ListBlobItem blobItem : container.listBlobs()) {
-		//		    	sb.append( blobItem.getUri() );
-		//		    }
-		//		    String str = sb.toString();
-				    
-				    CloudBlockBlob blob = container.getBlockBlobReference("myblob.jpg");
-			    
-			   
-			    	blob.upload(new FileInputStream(photoFile), photoFile.length());
-			    }
 
+				    String fileName = photoFile.getName();
+				    CloudBlockBlob blob = container.getBlockBlobReference(fileName);
+			    
+			    	blob.upload(new FileInputStream(photoFile), photoFile.length());
+
+			    }
 			    
 		    } catch(Exception e) {
-		    	e.printStackTrace();
+		    	error = e;
+		    	return false;
 			}
 			
-			return null;
+			return true;
 
 		}
 	}
