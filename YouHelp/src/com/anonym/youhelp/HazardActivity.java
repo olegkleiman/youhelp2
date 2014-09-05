@@ -2,6 +2,7 @@ package com.anonym.youhelp;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 
 import java.text.SimpleDateFormat;
@@ -38,12 +39,18 @@ import android.view.View.OnClickListener;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.microsoft.azure.storage.*;
+import com.microsoft.azure.storage.blob.*;
+
 public class HazardActivity extends Activity {
 
+
+	
 	private Location currentLocation;
 	private String userid;
 	
 	static final int REQUEST_IMAGE_CAPTURE = 1;
+	File photoFile = null;
 	ImageView mImageView;
 	String mCurrentPhotoPath;
 	
@@ -60,9 +67,7 @@ public class HazardActivity extends Activity {
 		// Or use LocationManager.GPS_PROVIDER
 
 		currentLocation = locationManager.getLastKnownLocation(locationProvider);
-		
 
-		
 		ImageView btnSend = (ImageView) findViewById(R.id.btnSend);
 		btnSend.setOnClickListener(new OnClickListener(){
 
@@ -70,6 +75,9 @@ public class HazardActivity extends Activity {
 			public void onClick(View view) {
 				
 				if( isNetworkAvailable() ) {
+					
+					UploadBlobTask uploadTask = new UploadBlobTask();
+					uploadTask.execute("pictures");
 					
 					String serviceURL = getString(R.string.send_toast_service_url);
 					// Should be something like http://youhelp.cloudapp.net/YouHelpService.svc/sendtoast?title=;
@@ -124,7 +132,7 @@ public class HazardActivity extends Activity {
 			    if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
 			    	
 			        // Create the File where the photo should go
-			        File photoFile = null;
+			        photoFile = null;
 			        try {
 			            photoFile = createImageFile();
 			        } catch (IOException ex) {
@@ -200,6 +208,54 @@ public class HazardActivity extends Activity {
 		}
 		return super.onOptionsItemSelected(item);
 	}
+	
+	class UploadBlobTask extends AsyncTask<String, String, Void> {
+
+		public static final String storageConnectionString = 
+			    "DefaultEndpointsProtocol=http;" + 
+			    "AccountName=youhelpstorage;" + 
+			    "AccountKey=dtpTqukoGje8FSnSvUBc/of+6Y3FQZRi7eS2+PTanCnAglBBExnsvXjxTjZQxiROUWJbZZijlZ97WR7/l6MDMA==";
+		
+		@Override
+		protected Void doInBackground(String... params) {
+			
+			try{
+				
+				 if( photoFile != null ) {
+
+					String containerName = params[0];
+					// Retrieve storage account from connection-string.
+				    CloudStorageAccount storageAccount = CloudStorageAccount.parse(storageConnectionString);
+				    
+				    // Create the blob client.
+				    CloudBlobClient blobClient = storageAccount.createCloudBlobClient();
+				    
+				    // Retrieve reference to a previously created container.
+				    CloudBlobContainer container = blobClient.getContainerReference(containerName);
+				    
+		//		    // Loop over blobs within the container and output the URI to each of them.
+		//		    StringBuilder sb = new StringBuilder();
+		//		    for (ListBlobItem blobItem : container.listBlobs()) {
+		//		    	sb.append( blobItem.getUri() );
+		//		    }
+		//		    String str = sb.toString();
+				    
+				    CloudBlockBlob blob = container.getBlockBlobReference("myblob.jpg");
+			    
+			   
+			    	blob.upload(new FileInputStream(photoFile), photoFile.length());
+			    }
+
+			    
+		    } catch(Exception e) {
+		    	e.printStackTrace();
+			}
+			
+			return null;
+
+		}
+	}
+
 	
 	class SendMessageAsyncTask extends AsyncTask<String, String, String> {
 
