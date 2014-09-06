@@ -11,6 +11,10 @@
     <string name="refresh_button_caption">Оновити</string>
     <string name="sendmessage_button_caption">Надіслати</string>
     
+    <string name="dummyUserName">Ім\'я користувача</string>
+    <string name="dummyUserTitle">Повідомлення</string>
+    <string name="dummyUserPhone">0543307026</string>
+    
     <string name="buttonDeleteAll">Видалити все</string>
     <string name="buttonCallMe">Зателефонуйте мені</string> 
 </resources>

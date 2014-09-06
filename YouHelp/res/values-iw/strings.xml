@@ -12,6 +12,10 @@
     <string name="refresh_button_caption">רענן</string>
     <string name="next_register_button_caption">הבא</string>
     
+    <string name="dummyUserName">שם משתמש</string>
+    <string name="dummyUserTitle">הודעה</string>
+    <string name="dummyUserPhone">0543307026"</string>
+    
     <string name="buttonDeleteAll">מחק הכל</string>
     <string name="buttonCallMe">תתקשר עליי</string>  
 </resources>

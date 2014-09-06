@@ -24,6 +24,9 @@
     <string name="image_jampercable_desc">Jamper Cable</string>
     <string name="image_helpother_desc">Other Help</string>
     <string name="image_send_desc">Send</string>
+    <string name="image_user_desc">User Name</string>
+    <string name="image_user_hazard_pic">Picture</string>
+    <string name="image_user_record_voice">Record Message</string>
     <string name="title_activity_ride">RideActivity</string>
     <string name="title_activity_settings">Settings for YouHelp</string>
     <string name="title_activity_map">MapActivity</string>
@@ -37,6 +40,9 @@
     <string name="your_message">Your Message:</string>
     <string name="maps_app">Maps App:</string>
     <string name="sendmessage_button_caption">Send</string>
+    <string name="dummyUserName">User Name</string>
+    <string name="dummyUserTitle">has an intention</string>
+    <string name="dummyUserPhone">0543307026"</string>
     <string name="buttonDeleteAll">Delete All</string>
     <string name="buttonCallMe">Call Me</string>
 
