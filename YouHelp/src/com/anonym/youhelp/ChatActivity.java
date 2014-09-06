@@ -4,9 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
+import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
@@ -21,38 +19,43 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 
-import com.microsoft.azure.storage.CloudStorageAccount;
-import com.microsoft.azure.storage.blob.CloudBlobClient;
-import com.microsoft.azure.storage.blob.CloudBlobContainer;
-import com.microsoft.azure.storage.blob.CloudBlockBlob;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.Drawable;
+import android.media.MediaRecorder;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.microsoft.azure.storage.CloudStorageAccount;
+import com.microsoft.azure.storage.blob.CloudBlobClient;
+import com.microsoft.azure.storage.blob.CloudBlobContainer;
+import com.microsoft.azure.storage.blob.CloudBlockBlob;
+
 public class ChatActivity extends Activity {
 
-	private static final String TAG = "com.anonym.youhelp.chatactivity";
+	private static final String LOG_TAG = "com.anonym.youhelp.chatactivity";
 	String toUserid = "", provider = "";
 	private String myUserID;
 	private YHDataSource datasource;
 	private ChatAdapter chatAdapter;
 	
+	MediaRecorder mRecorder;
+	private static String mFileName = null;
+	boolean mStartRecording = true;
+	
 	ImageView profilePictureView = null;
-	ImageView hazardPictureView = null;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -74,15 +77,35 @@ public class ChatActivity extends Activity {
 				GetProfileTask task = new GetProfileTask(); 
 				task.execute(toUserid); 
 				
-				hazardPictureView = (ImageView)findViewById(R.id.imageViewHazardPic);
-				GetBlobTask blobTask = new GetBlobTask(this);
+				ImageView hazardPictureView = (ImageView)findViewById(R.id.imageViewHazardPic);
+				GetBlobTask blobTask = new GetBlobTask(this, hazardPictureView);
 				blobTask.execute("pictures", "1475946282659875_20140905_215401-888053217.jpg");
 		}
 		
+		mRecorder = new MediaRecorder();
+        mFileName = Environment.getExternalStorageDirectory().getAbsolutePath();
+        mFileName += "/audiorecordtest.3gp";
+		
+		ImageButton btnRecordMessage = (ImageButton)findViewById(R.id.btnRecordMessage);
+		btnRecordMessage.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				
+				onRecord(mStartRecording);
+				
+//                if (mStartRecording) {
+//                    setText("Stop recording");
+//                } else {
+//                    setText("Start recording");
+//                }
+                
+                mStartRecording = !mStartRecording;
+			}
+		});
+		
 		SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 		myUserID = sharedPrefs.getString("prefUsername", "");
-		
-
 		
 		ListView messagesList = (ListView)findViewById(R.id.lvChatRoom);
 		
@@ -99,14 +122,51 @@ public class ChatActivity extends Activity {
 			messagesList.setAdapter(chatAdapter);
 			
 		}catch(Exception ex){
-			Log.e(TAG, ex.getMessage());
+			Log.e(LOG_TAG, ex.getMessage());
 			ex.printStackTrace();
 		}
 	}
 	
+    private void startRecording() {
+
+        mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+        mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+        mRecorder.setOutputFile(mFileName);
+        mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+
+        try {
+            mRecorder.prepare();
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "prepare() failed");
+        }
+
+        mRecorder.start();
+    }
+	
+    private void onRecord(boolean start) {
+        if (start) {
+            startRecording();
+        } else {
+            stopRecording();
+        }
+    }
+    
+    private void stopRecording() {
+        mRecorder.stop();
+        mRecorder.release();
+        mRecorder = null;
+    }
+    
+    private void stopPlaying() {
+//        mPlayer.release();
+//        mPlayer = null;
+    }
+	
 	public void onCallMeChat(View view){
 		
 	}
+	
+	
 	
 	public void onDelteChat(View view){
 		datasource.deleteAllMessagesOfUser(toUserid);
@@ -220,10 +280,11 @@ public class ChatActivity extends Activity {
 		}
 	}
 	
-	private class GetBlobTask extends AsyncTask<String, String, ByteArrayOutputStream>
+	private class GetBlobTask extends AsyncTask<String, String, Bitmap>
 	{
 		Context context;
 		Exception error;
+		private final WeakReference<ImageView> imageViewReference;
 		
 		public static final String storageConnectionString = 
 			    "DefaultEndpointsProtocol=http;" + 
@@ -231,37 +292,28 @@ public class ChatActivity extends Activity {
 			    "AccountKey=dtpTqukoGje8FSnSvUBc/of+6Y3FQZRi7eS2+PTanCnAglBBExnsvXjxTjZQxiROUWJbZZijlZ97WR7/l6MDMA==";
 
 		
-		public GetBlobTask(Context ctx){
+		public GetBlobTask(Context ctx, ImageView imageView){
 			context = ctx;
+			 
+			// Use a WeakReference to ensure the ImageView can be garbage collected
+			imageViewReference = new WeakReference<ImageView>(imageView);
 		}
 		
+		// BitmapFactory.decodeXXX() functions should not be executed on the main UI 
+		// due to unpredictable time the data takes to load into memory
 		@Override
-	    protected void onPostExecute(ByteArrayOutputStream result) {
+	    protected void onPostExecute(Bitmap bitmap) {
 			try{
-			if( error != null ) {
-            	Toast.makeText(context, error.getMessage(), 
-    						Toast.LENGTH_LONG).show();
-			}else if( result != null ) {
+				if( error != null ) {
+	            	Toast.makeText(context, error.getMessage(), 
+	    						Toast.LENGTH_LONG).show();
+				}else if (imageViewReference != null && bitmap != null) {
+					final ImageView imageView = imageViewReference.get();
+					if (imageView != null) {
+		                imageView.setImageBitmap(bitmap);
+					}
+				}
 
-				InputStream decodedInput = new ByteArrayInputStream(result.toByteArray());
-				
-//   			 	// Get the dimensions of the View
-//    		    int targetW = hazardPictureView.getWidth();
-//    		    int targetH = hazardPictureView.getHeight();
-//    		    
-//    		    // Get the dimensions of the bitmap
-//    		    BitmapFactory.Options bmOptions = new BitmapFactory.Options();
-//    		    bmOptions.inJustDecodeBounds = true;
-//    		    Bitmap bitmap = BitmapFactory.decodeStream(decodedInput, bmOptions);
-    		    
-				
-				Bitmap bitmap = BitmapFactory.decodeStream(decodedInput);
-				hazardPictureView.setImageBitmap(bitmap);
-				
-				//Drawable d = Drawable.createFromStream(decodedInput,"src");
-				//hazardPictureView.setImageDrawable(d);
-
-			}
 			} catch(OutOfMemoryError e){
 				Toast.makeText(context, e.getMessage(), Toast.LENGTH_LONG).show();
 			} catch (Exception ex) {
@@ -270,7 +322,7 @@ public class ChatActivity extends Activity {
 		}
 		
 		@Override
-		protected ByteArrayOutputStream doInBackground(String... params) {
+		protected Bitmap doInBackground(String... params) {
 			try {
 				
 				String containerName = params[0];
@@ -290,13 +342,11 @@ public class ChatActivity extends Activity {
 			    ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			    blob.download(baos);
 			    
-			    // Using pipelines seems to be more effective
-//			    PipedOutputStream po = new PipedOutputStream();
-//			    PipedInputStream pi = new PipedInputStream(po);
-//			    pi.read(baos.toByteArray());
-//			    return pi;
+			    InputStream decodedInput = new ByteArrayInputStream(baos.toByteArray());
 			    
-			    return baos;
+			    return decodeSampledBitmapFromResource(decodedInput, 100, 100);
+			    
+			    //return baos;
 			    
 			} catch(Exception e) {
 		    	error = e;
@@ -305,6 +355,49 @@ public class ChatActivity extends Activity {
 
 		}
 		
+		public Bitmap decodeSampledBitmapFromResource(InputStream stream, 
+		        										int reqWidth, int reqHeight) {
+//		    BitmapFactory.Options options = new BitmapFactory.Options();
+//		    options.inJustDecodeBounds = true;
+//		    BitmapFactory.decodeStream(stream, null, options);
+//		    
+//		    // Calculate inSampleSize
+//		    options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
+		    
+//		    options.inJustDecodeBounds = false;
+		    try {
+		    	//Bitmap bitmap = BitmapFactory.decodeStream(stream, null, options);
+		    	//Bitmap bitmap = BitmapFactory.decodeStream(stream);
+		    	return null; //bitmap;
+		    }catch(Exception ex) {
+		    	ex.printStackTrace();
+		    }
+		    
+		    return null;
+		}
+		
+		public int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
+		    
+			// Raw height and width of image
+		    final int height = options.outHeight;
+		    final int width = options.outWidth;
+		    int inSampleSize = 1;
+	
+		    if (height > reqHeight || width > reqWidth) {
+	
+		        final int halfHeight = height / 2;
+		        final int halfWidth = width / 2;
+	
+		        // Calculate the largest inSampleSize value that is a power of 2 and keeps both
+		        // height and width larger than the requested height and width.
+		        while ((halfHeight / inSampleSize) > reqHeight
+		                && (halfWidth / inSampleSize) > reqWidth) {
+		            inSampleSize *= 2;
+		        }
+		    }
+
+	    return inSampleSize;
+	}
 	}
 
 	private class GetProfileTask extends AsyncTask<String, Object, Bitmap> 
