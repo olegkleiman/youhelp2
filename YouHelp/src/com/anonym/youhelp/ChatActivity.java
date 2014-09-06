@@ -70,7 +70,7 @@ public class ChatActivity extends Activity {
 		setContentView(R.layout.activity_chat);
 		
 		SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-		myUserID = sharedPrefs.getString("prefUsername", "");
+		myUserID = sharedPrefs.getString("userid", "");
 		
 		Intent requestingIntent = getIntent();
 		
@@ -383,11 +383,11 @@ public class ChatActivity extends Activity {
 				    // Retrieve reference to a previously created container.
 				    CloudBlobContainer container = blobClient.getContainerReference(containerName);
 
-				    //String fileName = photoFile.getName();
-				    CloudBlockBlob blob = container.getBlockBlobReference(voiceFileName);
-			    
+				    String fileName = voiceFileName.substring(voiceFileName.lastIndexOf('/') + 1);
+				    CloudBlockBlob blob = container.getBlockBlobReference(fileName);
+
 				    File file = new File(voiceFileName);
-			    	blob.upload(new FileInputStream(file), file.length());
+			    	blob.upload(new FileInputStream(voiceFileName), file.length());
 
 			    }
 			    

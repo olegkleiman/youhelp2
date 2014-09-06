@@ -24,8 +24,10 @@ public class ChatAdapter extends ArrayAdapter<YHMessage> {
     String myUSerID;
     SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
 	
-	public ChatAdapter(Context context, int layoutResourceId, List<YHMessage> data, 
-				String userID) 
+	public ChatAdapter(Context context, 
+						int layoutResourceId, 
+						List<YHMessage> data, 
+						String userID) 
 	{
         super(context, layoutResourceId, data);
         
