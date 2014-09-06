@@ -2,11 +2,14 @@ package com.anonym.youhelp;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -25,6 +28,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -32,6 +36,7 @@ import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -51,9 +56,11 @@ public class ChatActivity extends Activity {
 	private YHDataSource datasource;
 	private ChatAdapter chatAdapter;
 	
-	MediaRecorder mRecorder;
-	private static String mFileName = null;
+	private MediaRecorder mRecorder;
+	private MediaPlayer   mPlayer = null;
+	String voiceFileName;
 	boolean mStartRecording = true;
+	boolean mStartPlaying = true;
 	
 	ImageView profilePictureView = null;
 	
@@ -61,6 +68,9 @@ public class ChatActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_chat);
+		
+		SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+		myUserID = sharedPrefs.getString("prefUsername", "");
 		
 		Intent requestingIntent = getIntent();
 		
@@ -83,29 +93,30 @@ public class ChatActivity extends Activity {
 		}
 		
 		mRecorder = new MediaRecorder();
-        mFileName = Environment.getExternalStorageDirectory().getAbsolutePath();
-        mFileName += "/audiorecordtest.3gp";
+		mPlayer = new MediaPlayer();
 		
 		ImageButton btnRecordMessage = (ImageButton)findViewById(R.id.btnRecordMessage);
 		btnRecordMessage.setOnClickListener(new View.OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
-				
-				onRecord(mStartRecording);
-				
-//                if (mStartRecording) {
-//                    setText("Stop recording");
-//                } else {
-//                    setText("Start recording");
-//                }
-                
-                mStartRecording = !mStartRecording;
+
+					onRecord(mStartRecording, myUserID);
+	                mStartRecording = !mStartRecording;
+
 			}
 		});
 		
-		SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-		myUserID = sharedPrefs.getString("prefUsername", "");
+		Button btnPlay = (Button)findViewById(R.id.btnPlay);
+		btnPlay.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				onPlay(mStartPlaying, voiceFileName);
+				mStartPlaying = !mStartPlaying;
+				
+			};
+		});
 		
 		ListView messagesList = (ListView)findViewById(R.id.lvChatRoom);
 		
@@ -127,11 +138,55 @@ public class ChatActivity extends Activity {
 		}
 	}
 	
-    private void startRecording() {
+	private String createVoiceFile(String userName) throws IOException {
+	    // Create an image file name
+	    String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+	    String imageFileName = userName + "_" + timeStamp;
+	    File storageDir = Environment.getExternalStoragePublicDirectory(
+	            Environment.DIRECTORY_PICTURES);
+	    File voiceFile = File.createTempFile(
+	        imageFileName,  /* prefix */
+	        ".3gp",         /* suffix */
+	        storageDir      /* directory */
+	    );
+
+	    return voiceFile.getAbsolutePath();
+	}
+	
+    private void onPlay(boolean start, String fileName) {
+        if (start) {
+            startPlaying(fileName);
+        } else {
+            stopPlaying();
+        }
+    }
+	
+    private void startPlaying(String fileName) {
+
+        try {
+            mPlayer.setDataSource(fileName);
+            mPlayer.prepare();
+            mPlayer.start();
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "prepare() failed");
+        } catch(Exception ex) {
+        	Log.e(LOG_TAG, ex.getMessage());
+        }
+    
+    }
+	
+    private void stopPlaying() {
+    	mPlayer.stop();
+    	mPlayer.reset();
+        //mPlayer.release();
+        //mPlayer = null;
+    }
+    
+    private void startRecording(String fileName) {
 
         mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-        mRecorder.setOutputFile(mFileName);
+        mRecorder.setOutputFile(fileName);
         mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
 
         try {
@@ -143,31 +198,35 @@ public class ChatActivity extends Activity {
         mRecorder.start();
     }
 	
-    private void onRecord(boolean start) {
-        if (start) {
-            startRecording();
-        } else {
-            stopRecording();
-        }
+    private void onRecord(boolean start, String userID) {
+      
+    	try {
+	    	if (start) {
+	    		
+					voiceFileName = createVoiceFile(userID);
+		            startRecording(voiceFileName);
+	
+	        } else {
+	            stopRecording();
+	        }
+        
+		}
+		catch(Exception ex) {
+			Log.e(LOG_TAG, ex.getMessage());
+		}
     }
     
     private void stopRecording() {
         mRecorder.stop();
-        mRecorder.release();
-        mRecorder = null;
+        //mRecorder.release();
+        //mRecorder = null;
     }
     
-    private void stopPlaying() {
-//        mPlayer.release();
-//        mPlayer = null;
-    }
-	
+
 	public void onCallMeChat(View view){
 		
 	}
-	
-	
-	
+
 	public void onDelteChat(View view){
 		datasource.deleteAllMessagesOfUser(toUserid);
 		chatAdapter.clear();
@@ -207,6 +266,9 @@ public class ChatActivity extends Activity {
 			
 			SendChatMessageAsyncTask sendTask = new SendChatMessageAsyncTask(this);
 			sendTask.execute(uri);
+			
+            UploadBlobTask uploadTask = new UploadBlobTask(this);
+            uploadTask.execute("voicemessages");
 			
 		}catch(Exception ex){
 			
@@ -279,6 +341,66 @@ public class ChatActivity extends Activity {
 
 		}
 	}
+	
+	private class UploadBlobTask extends AsyncTask<String, String, Boolean> {
+
+		Context context;
+		Exception error;
+		
+		public static final String storageConnectionString = 
+			    "DefaultEndpointsProtocol=http;" + 
+			    "AccountName=youhelpstorage;" + 
+			    "AccountKey=dtpTqukoGje8FSnSvUBc/of+6Y3FQZRi7eS2+PTanCnAglBBExnsvXjxTjZQxiROUWJbZZijlZ97WR7/l6MDMA==";
+		
+		public UploadBlobTask(Context ctx){
+			context = ctx;
+		}
+		
+		@Override
+	    protected void onPostExecute(Boolean result) {
+		
+			if( !result  && error != null ) {
+				String strMessage = error.getMessage();
+				Toast.makeText(context, strMessage, Toast.LENGTH_LONG).show(); 
+			}
+		}
+		
+		@Override
+		protected Boolean doInBackground(String... params) {
+			
+			try{
+				
+				 if( voiceFileName != null && !voiceFileName.isEmpty() ) {
+
+					String containerName = params[0];
+
+					// Retrieve storage account from connection-string.
+				    CloudStorageAccount storageAccount = CloudStorageAccount.parse(storageConnectionString);
+				    
+				    // Create the blob client.
+				    CloudBlobClient blobClient = storageAccount.createCloudBlobClient();
+				    
+				    // Retrieve reference to a previously created container.
+				    CloudBlobContainer container = blobClient.getContainerReference(containerName);
+
+				    //String fileName = photoFile.getName();
+				    CloudBlockBlob blob = container.getBlockBlobReference(voiceFileName);
+			    
+				    File file = new File(voiceFileName);
+			    	blob.upload(new FileInputStream(file), file.length());
+
+			    }
+			    
+		    } catch(Exception e) {
+		    	error = e;
+		    	return false;
+			}
+			
+			return true;
+
+		}
+	}
+
 	
 	private class GetBlobTask extends AsyncTask<String, String, Bitmap>
 	{

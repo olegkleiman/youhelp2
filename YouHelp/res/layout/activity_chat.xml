@@ -148,6 +148,12 @@
             android:layout_height="wrap_content"
             android:contentDescription="@string/image_user_record_voice"
             android:src="@android:drawable/btn_star" />
+
+        <Button
+            android:id="@+id/btnPlay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Play" />
         
     </LinearLayout>
     
