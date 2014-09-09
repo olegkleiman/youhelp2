@@ -1622,7 +1622,7 @@ containing a value of this type.
         public static final int com_facebook_list_section_header_background=0x7f02006a;
         public static final int com_facebook_loginbutton_silver=0x7f02006b;
         public static final int com_facebook_logo=0x7f02006c;
-        public static final int com_facebook_picker_default_separator_color=0x7f0200b0;
+        public static final int com_facebook_picker_default_separator_color=0x7f0200b3;
         public static final int com_facebook_picker_item_background=0x7f02006d;
         public static final int com_facebook_picker_list_focused=0x7f02006e;
         public static final int com_facebook_picker_list_longpressed=0x7f02006f;
@@ -1676,20 +1676,23 @@ containing a value of this type.
         public static final int h_divider=0x7f02009f;
         public static final int help=0x7f0200a0;
         public static final int help_other=0x7f0200a1;
-        public static final int ic_launcher=0x7f0200a2;
-        public static final int ic_plusone_medium_off_client=0x7f0200a3;
-        public static final int ic_plusone_small_off_client=0x7f0200a4;
-        public static final int ic_plusone_standard_off_client=0x7f0200a5;
-        public static final int ic_plusone_tall_off_client=0x7f0200a6;
-        public static final int jamper_cable=0x7f0200a7;
-        public static final int map=0x7f0200a8;
-        public static final int none=0x7f0200a9;
-        public static final int powered_by_google_dark=0x7f0200aa;
-        public static final int powered_by_google_light=0x7f0200ab;
-        public static final int send=0x7f0200ac;
-        public static final int settings=0x7f0200ad;
-        public static final int sos=0x7f0200ae;
-        public static final int trip=0x7f0200af;
+        public static final int ic_action_camera=0x7f0200a2;
+        public static final int ic_action_mic=0x7f0200a3;
+        public static final int ic_action_send_now=0x7f0200a4;
+        public static final int ic_launcher=0x7f0200a5;
+        public static final int ic_plusone_medium_off_client=0x7f0200a6;
+        public static final int ic_plusone_small_off_client=0x7f0200a7;
+        public static final int ic_plusone_standard_off_client=0x7f0200a8;
+        public static final int ic_plusone_tall_off_client=0x7f0200a9;
+        public static final int jamper_cable=0x7f0200aa;
+        public static final int map=0x7f0200ab;
+        public static final int none=0x7f0200ac;
+        public static final int powered_by_google_dark=0x7f0200ad;
+        public static final int powered_by_google_light=0x7f0200ae;
+        public static final int send=0x7f0200af;
+        public static final int settings=0x7f0200b0;
+        public static final int sos=0x7f0200b1;
+        public static final int trip=0x7f0200b2;
     }
     public static final class id {
         public static final int action_bar=0x7f080030;
