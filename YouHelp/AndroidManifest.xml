@@ -64,7 +64,7 @@
             android:label="@string/title_activity_settings"
             android:screenOrientation="portrait" >
         </activity>
-        <activity
+		<activity
             android:name=".MapActivity"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" >
         </activity>
@@ -74,7 +74,8 @@
         </activity>
         <activity
             android:name=".ChatActivity"
-            android:label="@string/title_activity_chat" >
+            android:label="@string/title_activity_chat" 
+            android:screenOrientation="portrait">
         </activity>
         
         <receiver

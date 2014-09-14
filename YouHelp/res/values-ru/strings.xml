@@ -17,5 +17,7 @@
     
     <string name="buttonDeleteAll">Удалить всё</string>
     <string name="buttonCallMe">Позвоните мне</string> 
+    
+    <string name="message_hint">Введите сообщение</string>
 </resources>
 

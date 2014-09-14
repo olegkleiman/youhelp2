@@ -28,5 +28,9 @@
 	    android:textColor="@android:color/primary_text_light"
 	    android:textSize="16sp"
 	    android:textStyle="bold" />
+	
+	<ImageButton android:id="@+id/pause" 
+	            style="@android:style/MediaButton.Play" 
+	            android:contentDescription="@string/description" /> 
         
 </LinearLayout>

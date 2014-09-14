@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/black"
-    android:orientation="vertical">
+    android:orientation="vertical" >
  
     <View android:layout_width="fill_parent" android:layout_height="2dp"
 		android:fadingEdge="horizontal"/>
@@ -97,22 +97,27 @@
 		android:padding="8dip">  
 	    
 	    <EditText
- 	        android:id="@+id/txtMessage"
+	        android:id="@+id/txtMessage"
 	        android:layout_width="0dip"
-        	android:layout_height="fill_parent"
-        	android:layout_weight="1"
-        	android:textColor="@color/white" 
-        	android:maxLines="5"
-        	android:inputType="text|textAutoCorrect"
-        	android:imeOptions="normal" 
-        	android:cursorVisible="true">
+	        android:layout_height="fill_parent"
+	        android:layout_weight="1"
+	        android:cursorVisible="true"
+	        android:hint="@string/message_hint"
+	        android:imeOptions="normal"
+	        android:inputType="text|textAutoCorrect"
+	        android:maxLines="5"
+	        android:textColor="@color/white" >
+
 	    </EditText>
 	    
-	    <Button
+	    <ImageButton
 	        android:id="@+id/btnSendChatMessage"
-	        android:layout_width="wrap_content" android:layout_height="wrap_content"
+	        android:layout_width="64dp"
+	        android:layout_height="64dp"
 	        android:gravity="center_vertical|center_horizontal"
 	        android:onClick="onSendChatMessage"
+	        android:scaleType="centerCrop"
+	        android:src="@drawable/sys_send"
 	        android:text="@string/sendmessage_button_caption" />
     
     </LinearLayout>
@@ -144,16 +149,20 @@
 
         <ImageButton
             android:id="@+id/btnRecordMessage"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
             android:contentDescription="@string/image_user_record_voice"
-            android:src="@android:drawable/btn_star" />
+            android:scaleType="centerCrop"
+            android:src="@drawable/record_start" />
 
-        <Button
+        <ImageButton
             android:id="@+id/btnPlay"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Play" />
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/sys_play_button"
+            android:text="Play"
+            android:visibility="invisible" />
         
     </LinearLayout>
     

@@ -18,4 +18,6 @@
     
     <string name="buttonDeleteAll">מחק הכל</string>
     <string name="buttonCallMe">תתקשר עליי</string>  
+    
+    <string name="message_hint">הזן הודעה</string>
 </resources>

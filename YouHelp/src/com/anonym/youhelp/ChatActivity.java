@@ -29,6 +29,7 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
+import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaRecorder;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -94,6 +95,13 @@ public class ChatActivity extends Activity {
 		
 		mRecorder = new MediaRecorder();
 		mPlayer = new MediaPlayer();
+		mPlayer.setOnCompletionListener(new OnCompletionListener(){
+		     @Override
+		     public void onCompletion(MediaPlayer mp) { 
+		    	 		stopPlaying();
+		    	 		mStartPlaying = true;
+		             }
+		});
 		
 		ImageButton btnRecordMessage = (ImageButton)findViewById(R.id.btnRecordMessage);
 		btnRecordMessage.setOnClickListener(new View.OnClickListener() {
@@ -107,7 +115,7 @@ public class ChatActivity extends Activity {
 			}
 		});
 		
-		Button btnPlay = (Button)findViewById(R.id.btnPlay);
+		ImageButton btnPlay = (ImageButton)findViewById(R.id.btnPlay);
 		btnPlay.setOnClickListener(new View.OnClickListener() {
 			
 			@Override
@@ -154,11 +162,10 @@ public class ChatActivity extends Activity {
 	}
 	
     private void onPlay(boolean start, String fileName) {
-        if (start) {
+        if (start) 
             startPlaying(fileName);
-        } else {
-            stopPlaying();
-        }
+        else 
+        	stopPlaying();
     }
 	
     private void startPlaying(String fileName) {
@@ -167,6 +174,10 @@ public class ChatActivity extends Activity {
             mPlayer.setDataSource(fileName);
             mPlayer.prepare();
             mPlayer.start();
+            
+            ImageButton btnPlay = (ImageButton)findViewById(R.id.btnPlay);
+            btnPlay.setImageResource(R.drawable.sys_pause);
+            
         } catch (IOException e) {
             Log.e(LOG_TAG, "prepare() failed");
         } catch(Exception ex) {
@@ -176,6 +187,10 @@ public class ChatActivity extends Activity {
     }
 	
     private void stopPlaying() {
+    	
+        ImageButton btnPlay = (ImageButton)findViewById(R.id.btnPlay);
+        btnPlay.setImageResource(R.drawable.sys_play_button);
+    	
     	mPlayer.stop();
     	mPlayer.reset();
         //mPlayer.release();
@@ -205,9 +220,19 @@ public class ChatActivity extends Activity {
 	    		
 					voiceFileName = createVoiceFile(userID);
 		            startRecording(voiceFileName);
+		            
+		            ImageButton btnRecordMessage = (ImageButton)findViewById(R.id.btnRecordMessage);
+		            btnRecordMessage.setImageResource(R.drawable.record_stop);
 	
 	        } else {
+	        	
+	            ImageButton btnRecordMessage = (ImageButton)findViewById(R.id.btnRecordMessage);
+	            btnRecordMessage.setImageResource(R.drawable.record_start);
+	        	
 	            stopRecording();
+	            
+	            ImageButton btnPlay = (ImageButton)findViewById(R.id.btnPlay);
+	            btnPlay.setVisibility(View.VISIBLE);
 	        }
         
 		}
