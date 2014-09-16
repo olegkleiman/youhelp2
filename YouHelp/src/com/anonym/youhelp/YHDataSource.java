@@ -23,7 +23,8 @@ public class YHDataSource
 			YHSQLiteHelper.COLUMN_CONTENT,
 			YHSQLiteHelper.COLUMN_USERID,
 			YHSQLiteHelper.COLUMN_DATECREATED,
-			YHSQLiteHelper.COLUMN_TOUSERID};
+			YHSQLiteHelper.COLUMN_TOUSERID,
+			YHSQLiteHelper.COLUMN_BLOBURL};
 	
 	public YHDataSource(Context context){
 		dbHelper = new YHSQLiteHelper(context);
@@ -38,9 +39,10 @@ public class YHDataSource
 	}
 	
 	public YHMessage createYHMessage(String content, 
-			String userid, 
-			Date dateCreated,
-			String toUserid){
+									String userid, 
+									Date dateCreated,
+									String toUserid,
+									String blobURL) {
 
 		ContentValues values = new ContentValues();
 		values.put(YHSQLiteHelper.COLUMN_CONTENT, content);
@@ -51,13 +53,15 @@ public class YHDataSource
 		values.put(YHSQLiteHelper.COLUMN_DATECREATED, strDate);
 		
 		if( !toUserid.isEmpty() )
-		values.put(YHSQLiteHelper.COLUMN_TOUSERID, toUserid);
+			values.put(YHSQLiteHelper.COLUMN_TOUSERID, toUserid);
+		if( !blobURL.isEmpty() ) 
+			values.put(YHSQLiteHelper.COLUMN_BLOBURL, blobURL);
 		
 		long insertID = database.insert(YHSQLiteHelper.TABLE_MESSAGES, null, values);
 		
 		Cursor cursor = database.query(YHSQLiteHelper.TABLE_MESSAGES, allColumns,
-		YHSQLiteHelper.COLUMN_ID + " = " + insertID, null,
-		null, null, null);
+										YHSQLiteHelper.COLUMN_ID + " = " + insertID, null,
+										null, null, null);
 		cursor.moveToFirst();
 		YHMessage newMessage = cursorToYHMessage(cursor);
 		
@@ -183,6 +187,7 @@ public class YHDataSource
 		}
 		message.setDateCreated(date);
 		message.setToUserId(cursor.getString(4));
+		message.setBlobURL(cursor.getString(5));
 		
 		return message;
 	}

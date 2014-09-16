@@ -333,9 +333,12 @@ public class ChatActivity extends Activity {
 			datasource = new YHDataSource(this);
 		
 		datasource.open();
-		 
-		Date date = new Date();
-		datasource.createYHMessage(content, this.myUserID, date, toUserid);
+
+		datasource.createYHMessage(content, 
+									this.myUserID, 
+									new Date(), 
+									this.toUserid, 
+									message.getBlobURL());
 		datasource.close();
 		
 		addMessageToAdapte(message);
