@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -22,6 +23,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -37,6 +39,7 @@ import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -147,18 +150,20 @@ public class ChatActivity extends Activity {
 	}
 	
 	private String createVoiceFile(String userName) throws IOException {
-	    // Create an image file name
-	    String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-	    String imageFileName = userName + "_" + timeStamp;
-	    File storageDir = Environment.getExternalStoragePublicDirectory(
-	            Environment.DIRECTORY_PICTURES);
-	    File voiceFile = File.createTempFile(
-	        imageFileName,  /* prefix */
-	        ".3gp",         /* suffix */
-	        storageDir      /* directory */
-	    );
+	    
+		File outputDir = this.getCacheDir();
+		String fileName = getTempFileName(userName);
+		File file = File.createTempFile(fileName, ".3gp", outputDir);
+		return file.getAbsolutePath();
 
-	    return voiceFile.getAbsolutePath();
+	}
+	
+	// Generates random file name 
+	@SuppressLint("SimpleDateFormat") 
+	private String getTempFileName(String userName) {
+		
+		String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        return userName + timeStamp;
 	}
 	
     private void onPlay(boolean start, String fileName) {
@@ -258,28 +263,39 @@ public class ChatActivity extends Activity {
 	}
 	
 	public void onSendChatMessage(View view) {
+
+		boolean hasVoiceAttachement = false;
 		
 		EditText txtMessage = (EditText)findViewById(R.id.txtMessage);
 		String strMessage = txtMessage.getText().toString();
-		if( strMessage.isEmpty() )
-			return;
-		
+		if( strMessage.isEmpty() ) {
+			if( voiceFileName.isEmpty() ) {
+				Toast.makeText(this, "No input was provided", Toast.LENGTH_LONG).show();
+				return;
+			}
+			else {
+				strMessage = "Voice message";
+				hasVoiceAttachement = true;
+			}
+		}
+
 		try {
 			
-			persistMessage(strMessage);
+			//persistMessage(strMessage);
 			txtMessage.setText("");
 			
 			YHMessage message = new YHMessage(0, strMessage);
-			message.setUserID(myUserID);
-			if( chatAdapter != null) 
-				chatAdapter.add(message);
+			message.setHasVoiceAttachement(hasVoiceAttachement);
 			
+			message.setUserID(myUserID);
+			addMessageToAdapte(message);
+		
 			String serviceURL = getString(R.string.send_chatmessage_url);
 			// Should be something like http://youhelp.cloudapp.net/YouHelpService.svc/sendchatmessage?content=;
 			
 			StringBuilder sb = new StringBuilder(serviceURL); 
 			sb.append("?content=");
-			sb.append(strMessage);
+			sb.append(URLEncoder.encode(strMessage, "utf-8")); 
 	  	 	
 			sb.append("&fromuserid=");
 			sb.append(myUserID);
@@ -292,8 +308,10 @@ public class ChatActivity extends Activity {
 			SendChatMessageAsyncTask sendTask = new SendChatMessageAsyncTask(this);
 			sendTask.execute(uri);
 			
+			UploadParams params = new UploadParams("voicemessages", message, this);
+			
             UploadBlobTask uploadTask = new UploadBlobTask(this);
-            uploadTask.execute("voicemessages");
+            uploadTask.execute(params);
 			
 		}catch(Exception ex){
 			
@@ -301,8 +319,16 @@ public class ChatActivity extends Activity {
 		}
 	}
 	
-	private void persistMessage(String content){
+	private void addMessageToAdapte(YHMessage message){
+		
+		if( chatAdapter != null && message != null) 
+			chatAdapter.add(message);
+	}
+	
+	public void persistMessage(YHMessage message) {
 
+		String content = message.getContent();
+	
 		if( datasource == null)
 			datasource = new YHDataSource(this);
 		
@@ -311,6 +337,8 @@ public class ChatActivity extends Activity {
 		Date date = new Date();
 		datasource.createYHMessage(content, this.myUserID, date, toUserid);
 		datasource.close();
+		
+		addMessageToAdapte(message);
 	
 	}
 	
@@ -367,10 +395,37 @@ public class ChatActivity extends Activity {
 		}
 	}
 	
-	private class UploadBlobTask extends AsyncTask<String, String, Boolean> {
+	public class UploadParams {
+		
+		public UploadParams(String containerName, YHMessage message, ChatActivity activity) {
+			this.containerName = containerName;
+			this.message = message;
+			this.activity = activity;
+		}
+		
+		private String containerName;
+		public String getContainerName() {
+			return containerName;
+		}
+		
+		private YHMessage message;
+		public YHMessage getYHMessage() {
+			return message;
+		}
+		
+		private ChatActivity activity;
+		public ChatActivity getActivity() {
+			return activity;
+		}
+
+	}
+	
+	private class UploadBlobTask extends AsyncTask<UploadParams, String, Boolean> {
 
 		Context context;
 		Exception error;
+		YHMessage yhMessage;
+		ChatActivity activity;
 		
 		public static final String storageConnectionString = 
 			    "DefaultEndpointsProtocol=http;" + 
@@ -388,16 +443,25 @@ public class ChatActivity extends Activity {
 				String strMessage = error.getMessage();
 				Toast.makeText(context, strMessage, Toast.LENGTH_LONG).show(); 
 			}
+			else {
+			
+				String blogURL = "https://youhelpstorage.blob.core.windows.net/voicemessages/";
+				blogURL +=  voiceFileName;
+				yhMessage.setBlobURL(blogURL);
+				activity.persistMessage(yhMessage);
+			}
 		}
 		
 		@Override
-		protected Boolean doInBackground(String... params) {
+		protected Boolean doInBackground(UploadParams... params) {
 			
 			try{
 				
 				 if( voiceFileName != null && !voiceFileName.isEmpty() ) {
 
-					String containerName = params[0];
+					String containerName = params[0].getContainerName();
+					this.yhMessage = params[0].getYHMessage();
+					this.activity = params[0].getActivity();
 
 					// Retrieve storage account from connection-string.
 				    CloudStorageAccount storageAccount = CloudStorageAccount.parse(storageConnectionString);

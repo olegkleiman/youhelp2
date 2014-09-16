@@ -107,23 +107,29 @@ public class MapActivity extends FragmentActivity implements
 			if( requestingIntent.hasExtra("title") )
 				title = requestingIntent.getStringExtra("title");	
 			
-			Location location = new Location("");
-			location.setLatitude(Float.parseFloat(tokens[0])); 
-			location.setLongitude(Float.parseFloat(tokens[1]));
-			
-			addReportedLocation(location, title, userid);
-			
+			try{
+				Location location = new Location("");
+				location.setLatitude(Float.parseFloat(tokens[0])); 
+				location.setLongitude(Float.parseFloat(tokens[1]));
+				
+				addReportedLocation(location, title, userid);
+				
+			} catch(Exception ex) {
+				Toast.makeText(this, ex.getMessage(), Toast.LENGTH_LONG).show();
+			}
+
 			autoCompView.clearFocus();
 
 		}
 	   
-	    ensureMap();
+		ensureMap();
 	    
+		//gMap.setMyLocationEnabled(true);
 		gMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
 		gMap.getUiSettings().setMyLocationButtonEnabled(true);
+		gMap.getUiSettings().setZoomControlsEnabled(false);
 		gMap.setBuildingsEnabled(true);	
-		gMap.setMyLocationEnabled(true);
-		
+
 		gMap.setOnInfoWindowClickListener(new OnInfoWindowClickListener(){ 
 			
 			@Override 

@@ -129,6 +129,24 @@
 			style="?android:attr/buttonBarStyle"
 			android:layout_weight="1">
 
+        <Button
+            android:id="@+id/buttonClose"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onDelteChat"
+            android:text="@string/buttonDeleteAll"
+            android:textColor="#FFFFFF" />
+        
+        <Button
+            android:id="@+id/buttonCallMe"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onCallMeChat"
+            android:text="@string/buttonCallMe" 
+            android:textColor="#FFFFFF" />
+
         <ImageButton
             android:id="@+id/btnRecordMessage"
             android:layout_width="64dp"
@@ -145,39 +163,6 @@
             android:src="@drawable/sys_play_button"
             android:text="Play"
             android:visibility="invisible" />
-        
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="0dp"
-            android:orientation="horizontal" >
-            
-            <View
-	            android:layout_width="0dp"
-	            android:layout_height="0dp"
-	            android:layout_weight="1"/> 
-            
-	        <ImageButton
-	            android:id="@+id/buttonDeleteAll"
-	            android:layout_width="64dp"
-	            android:layout_height="64dp"
-	            android:gravity="right"
-	            android:contentDescription="@string/image_user_record_voice"
-	            android:onClick="onDelteChat"
-	            android:scaleType="centerCrop"
-	            android:src="@drawable/delete_all" />
-	
-	        <ImageButton
-	            android:id="@+id/buttonCallMe"
-	            android:layout_width="64dp"
-	            android:layout_height="64dp"
-	            android:contentDescription="@string/image_user_record_voice"
-	            android:gravity="right"
-	            android:onClick="onCallMeChat"
-	            android:scaleType="centerCrop"
-	            android:src="@drawable/call_me" />
-
-        </LinearLayout>
         
     </LinearLayout>
     

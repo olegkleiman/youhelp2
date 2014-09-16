@@ -100,7 +100,7 @@ public class ChatAdapter extends ArrayAdapter<YHMessage> {
         
         YHMessage replica = this.getItem(position);
         
-    	if( replica.getShowPlayer()) { 
+    	if( replica.getHasVoiceAttachement ()) { 
     		holder.playButton.setVisibility(View.VISIBLE); 
     	} 
     	else { 

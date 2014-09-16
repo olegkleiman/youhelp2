@@ -1,0 +1,126 @@
+<!--  Galaxy Note II -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main_layout"
+    android:tag="1"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="0px"
+        android:layout_weight="1"
+        android:orientation="vertical" >
+
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_marginTop="10dp"
+            android:gravity="center"
+            android:text="@string/app_name"
+            android:textSize="30sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="0px"
+        android:layout_weight="4"
+        android:contentDescription="@string/image_settings_desc" >
+
+        <ImageView
+            android:id="@+id/imageViewFaltTire"
+            android:visibility="invisible"
+            android:layout_width="122dp"
+            android:layout_height="122dp"
+            android:layout_centerHorizontal="true"
+            android:contentDescription="@string/image_flattire_desc"
+            android:scaleType="fitXY"
+            android:src="@drawable/flat_tire" />
+
+        <ImageView
+            android:id="@+id/imageViewHelpOther"
+            android:visibility="invisible"
+            android:layout_width="122dp"
+            android:layout_height="122dp"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/imageViewSettings"
+            android:layout_marginRight="51dp"
+            android:contentDescription="@string/image_helpother_desc"
+            android:src="@drawable/help_other" />
+
+        <ImageView
+            android:id="@+id/imageViewMap"
+            android:layout_width="122dp"
+            android:layout_height="122dp"
+            android:layout_alignBottom="@+id/imageViewSOS"
+            android:layout_toRightOf="@+id/imageViewFaltTire"
+            android:contentDescription="@string/image_map_desc"
+            android:scaleType="fitXY"
+            android:src="@drawable/map" />
+
+        <ImageView
+            android:id="@+id/imageViewSOS"
+            android:layout_width="78dp"
+            android:layout_height="78dp"
+            android:layout_alignBottom="@+id/imageViewFaltTire"
+            android:layout_centerHorizontal="true"
+            android:contentDescription="@string/image_sos_desc"
+            android:scaleType="fitXY"
+            android:src="@drawable/sos" />
+
+        <ImageView
+            android:id="@+id/imageViewJamperCable"
+            android:layout_width="122dp"
+            android:layout_height="122dp"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="21dp"
+            android:contentDescription="@string/image_jampercable_desc"
+            android:src="@drawable/jamper_cable"
+            android:visibility="invisible" />
+
+        <ImageView
+            android:id="@+id/imageViewHelp"
+            android:layout_width="122dp"
+            android:layout_height="122dp"
+            android:layout_alignTop="@+id/imageViewSOS"
+            android:layout_toLeftOf="@+id/imageViewFaltTire"
+            android:contentDescription="@string/image_help_desc"
+            android:scaleType="fitXY"
+            android:src="@drawable/help" />
+
+        <ImageView
+            android:id="@+id/imageViewCompass"
+            android:layout_width="78dp"
+            android:layout_height="78dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="22dp"
+            android:contentDescription="@string/image_compass_desc"
+            android:scaleType="fitXY"
+            android:src="@drawable/compass" />
+
+        <ImageView
+            android:id="@+id/imageViewSettings"
+            android:layout_width="78dp"
+            android:layout_height="78dp"
+            android:layout_alignRight="@+id/imageViewHelp"
+            android:layout_below="@+id/imageViewCompass"
+            android:contentDescription="@string/image_settings_desc"
+            android:scaleType="fitXY"
+            android:src="@drawable/settings" />
+
+        <ImageView
+            android:id="@+id/imageViewTrip"
+            android:layout_width="122dp"
+            android:layout_height="122dp"
+            android:layout_below="@+id/imageViewJamperCable"
+            android:layout_toRightOf="@+id/imageViewSOS"
+            android:contentDescription="@string/image_trip_desc"
+            android:scaleType="fitXY"
+            android:src="@drawable/trip" />
+
+    </RelativeLayout>
+    
+</LinearLayout>

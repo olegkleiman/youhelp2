@@ -57,13 +57,21 @@ public class YHMessage {
 		toUserID = userid;
 	}
 	
-	private boolean ShowPlayer; 
-	public boolean getShowPlayer() { 
-		return ShowPlayer; 
+	private boolean hasVoiceAttachement; 
+	public boolean getHasVoiceAttachement() { 
+		return hasVoiceAttachement; 
 	} 
-	private void setShowPlayer(boolean show){ 
-		ShowPlayer = show; 
+	public void setHasVoiceAttachement(boolean flag){ 
+		hasVoiceAttachement = flag; 
 	} 
+	
+	private String blobURL;
+	public String getBlobURL() {
+		return blobURL;
+	}
+	public void setBlobURL(String url) {
+		blobURL = url;
+	}
 	
 	@Override
 	public String toString(){
