@@ -21,6 +21,7 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.anonym.youhelp.database.YHDataSource;
 import com.microsoft.windowsazure.notifications.NotificationsHandler;
 
 public class AzureNotificationsHandler extends NotificationsHandler {
@@ -56,6 +57,7 @@ public class AzureNotificationsHandler extends NotificationsHandler {
 		ctx = context;
 	    String title = bundle.getString("msg");
 	    String sentUserid = bundle.getString("userid");
+	    String blobURL = "";
 	    String coords = bundle.getString("coords");
 		String[] tokens = coords.split(";");
 		if( tokens.length != 2 ) 
@@ -72,7 +74,7 @@ public class AzureNotificationsHandler extends NotificationsHandler {
 //				return;
 //		}
 		
-		persistMessage(context, title, sentUserid);
+		persistMessage(context, title, sentUserid, blobURL);
 	    
 		startExternalActivity(context, tokens[0], tokens[1], title, sentUserid);
 		
@@ -80,7 +82,7 @@ public class AzureNotificationsHandler extends NotificationsHandler {
 
 	}
 	
-	private void persistMessage(Context context, String content, String userid){
+	private void persistMessage(Context context, String content, String userid, String blobURL){
 		
 		try{
 			if( datasource == null)
@@ -89,7 +91,7 @@ public class AzureNotificationsHandler extends NotificationsHandler {
 			datasource.open();
 			 
 			Date date = new Date();
-			datasource.createYHMessage(content, userid, date, "", "");
+			datasource.createYHMessage(content, userid, date, "", blobURL);
 			datasource.close();
 		
 		}catch(Exception ex){

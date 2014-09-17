@@ -28,6 +28,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.SQLException;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
@@ -47,6 +48,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.anonym.youhelp.database.YHDataSource;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
@@ -308,7 +310,7 @@ public class ChatActivity extends Activity {
 			SendChatMessageAsyncTask sendTask = new SendChatMessageAsyncTask(this);
 			sendTask.execute(uri);
 			
-			UploadParams params = new UploadParams("voicemessages", message, this);
+			UploadParams params = new UploadParams("voicemessages", message);
 			
             UploadBlobTask uploadTask = new UploadBlobTask(this);
             uploadTask.execute(params);
@@ -327,21 +329,27 @@ public class ChatActivity extends Activity {
 	
 	public void persistMessage(YHMessage message) {
 
-		String content = message.getContent();
-	
-		if( datasource == null)
-			datasource = new YHDataSource(this);
-		
-		datasource.open();
+		try {
+			String content = message.getContent();
 
-		datasource.createYHMessage(content, 
-									this.myUserID, 
-									new Date(), 
-									this.toUserid, 
-									message.getBlobURL());
-		datasource.close();
-		
-		addMessageToAdapte(message);
+			if( datasource == null)
+				datasource = new YHDataSource(this);
+			
+			datasource.open();
+
+			datasource.createYHMessage(content, 
+										this.myUserID, 
+										new Date(), 
+										this.toUserid, 
+										message.getBlobURL());
+			datasource.close();
+			
+			addMessageToAdapte(message);
+		} catch (SQLException error) {
+			 Toast.makeText(this, error.getMessage(), Toast.LENGTH_SHORT).show();
+		} catch (Exception error) {
+			 Toast.makeText(this, error.getMessage(), Toast.LENGTH_SHORT).show();
+		}
 	
 	}
 	
@@ -400,10 +408,9 @@ public class ChatActivity extends Activity {
 	
 	public class UploadParams {
 		
-		public UploadParams(String containerName, YHMessage message, ChatActivity activity) {
+		public UploadParams(String containerName, YHMessage message) {
 			this.containerName = containerName;
 			this.message = message;
-			this.activity = activity;
 		}
 		
 		private String containerName;
@@ -415,17 +422,11 @@ public class ChatActivity extends Activity {
 		public YHMessage getYHMessage() {
 			return message;
 		}
-		
-		private ChatActivity activity;
-		public ChatActivity getActivity() {
-			return activity;
-		}
 
 	}
 	
 	private class UploadBlobTask extends AsyncTask<UploadParams, String, Boolean> {
 
-		Context context;
 		Exception error;
 		YHMessage yhMessage;
 		ChatActivity activity;
@@ -435,8 +436,8 @@ public class ChatActivity extends Activity {
 			    "AccountName=youhelpstorage;" + 
 			    "AccountKey=dtpTqukoGje8FSnSvUBc/of+6Y3FQZRi7eS2+PTanCnAglBBExnsvXjxTjZQxiROUWJbZZijlZ97WR7/l6MDMA==";
 		
-		public UploadBlobTask(Context ctx){
-			context = ctx;
+		public UploadBlobTask(ChatActivity ctx){
+			activity = ctx;
 		}
 		
 		@Override
@@ -444,13 +445,16 @@ public class ChatActivity extends Activity {
 		
 			if( !result  && error != null ) {
 				String strMessage = error.getMessage();
-				Toast.makeText(context, strMessage, Toast.LENGTH_LONG).show(); 
+				Toast.makeText(activity, strMessage, Toast.LENGTH_LONG).show(); 
 			}
 			else {
 			
-				String blogURL = "https://youhelpstorage.blob.core.windows.net/voicemessages/";
-				blogURL +=  voiceFileName;
-				yhMessage.setBlobURL(blogURL);
+				if( voiceFileName != null ) {
+					String blogURL = "https://youhelpstorage.blob.core.windows.net/voicemessages/";
+					String fileName = voiceFileName.substring(voiceFileName.lastIndexOf('/') + 1);
+					blogURL += fileName;
+					yhMessage.setBlobURL(blogURL);
+				}
 				activity.persistMessage(yhMessage);
 			}
 		}
@@ -464,7 +468,6 @@ public class ChatActivity extends Activity {
 
 					String containerName = params[0].getContainerName();
 					this.yhMessage = params[0].getYHMessage();
-					this.activity = params[0].getActivity();
 
 					// Retrieve storage account from connection-string.
 				    CloudStorageAccount storageAccount = CloudStorageAccount.parse(storageConnectionString);

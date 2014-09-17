@@ -1,4 +1,4 @@
-package com.anonym.youhelp;
+package com.anonym.youhelp.database;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -6,6 +6,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+
+import com.anonym.youhelp.YHMessage;
+import com.anonym.youhelp.YHMessagesGroup;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -30,8 +33,16 @@ public class YHDataSource
 		dbHelper = new YHSQLiteHelper(context);
 	}
 	
-	public void open() throws SQLException {
+	public void open() throws SQLException, Exception {
+		
 		database = dbHelper.getWritableDatabase();
+		
+		int dbVersion = database.getVersion();
+		
+		if( YHSQLiteHelper.DATABASE_VERSION != dbVersion) {
+			dbHelper.onUpgrade(database, dbVersion, YHSQLiteHelper.DATABASE_VERSION);
+		}
+
 	}
 	
 	public void close() {
