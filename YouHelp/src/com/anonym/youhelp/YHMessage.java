@@ -71,6 +71,7 @@ public class YHMessage {
 	}
 	public void setBlobURL(String url) {
 		blobURL = url;
+		hasVoiceAttachement = true;
 	}
 	
 	@Override
