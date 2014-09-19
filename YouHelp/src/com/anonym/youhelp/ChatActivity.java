@@ -31,17 +31,12 @@ import android.content.SharedPreferences;
 import android.database.SQLException;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.media.MediaPlayer;
-import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaRecorder;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -49,6 +44,7 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.anonym.youhelp.database.YHDataSource;
+import com.anonym.youhelp.media.YHMediaPlayer;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
@@ -63,11 +59,10 @@ public class ChatActivity extends Activity {
 	private ChatAdapter chatAdapter;
 	
 	private MediaRecorder mRecorder;
-	private MediaPlayer   mPlayer = null;
+	private YHMediaPlayer yhPlayer;
+
 	String voiceFileName;
 	boolean mStartRecording = true;
-	boolean mStartPlaying = true;
-	
 	ImageView profilePictureView = null;
 	
 	@Override
@@ -99,14 +94,7 @@ public class ChatActivity extends Activity {
 		}
 		
 		mRecorder = new MediaRecorder();
-		mPlayer = new MediaPlayer();
-		mPlayer.setOnCompletionListener(new OnCompletionListener(){
-		     @Override
-		     public void onCompletion(MediaPlayer mp) { 
-		    	 		stopPlaying();
-		    	 		mStartPlaying = true;
-		             }
-		});
+		yhPlayer = new YHMediaPlayer();
 		
 		ImageButton btnRecordMessage = (ImageButton)findViewById(R.id.btnRecordMessage);
 		btnRecordMessage.setOnClickListener(new View.OnClickListener() {
@@ -120,13 +108,13 @@ public class ChatActivity extends Activity {
 			}
 		});
 		
-		ImageButton btnPlay = (ImageButton)findViewById(R.id.btnPlay);
+		final ImageButton btnPlay = (ImageButton)findViewById(R.id.btnPlay);
 		btnPlay.setOnClickListener(new View.OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
-				onPlay(mStartPlaying, voiceFileName);
-				mStartPlaying = !mStartPlaying;
+				
+				yhPlayer.onPlay(voiceFileName, btnPlay);
 				
 			};
 		});
@@ -167,42 +155,6 @@ public class ChatActivity extends Activity {
 		String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         return userName + timeStamp;
 	}
-	
-    private void onPlay(boolean start, String fileName) {
-        if (start) 
-            startPlaying(fileName);
-        else 
-        	stopPlaying();
-    }
-	
-    private void startPlaying(String fileName) {
-
-        try {
-            mPlayer.setDataSource(fileName);
-            mPlayer.prepare();
-            mPlayer.start();
-            
-            ImageButton btnPlay = (ImageButton)findViewById(R.id.btnPlay);
-            btnPlay.setImageResource(R.drawable.sys_pause);
-            
-        } catch (IOException e) {
-            Log.e(LOG_TAG, "prepare() failed");
-        } catch(Exception ex) {
-        	Log.e(LOG_TAG, ex.getMessage());
-        }
-    
-    }
-	
-    private void stopPlaying() {
-    	
-        ImageButton btnPlay = (ImageButton)findViewById(R.id.btnPlay);
-        btnPlay.setImageResource(R.drawable.sys_play_button);
-    	
-    	mPlayer.stop();
-    	mPlayer.reset();
-        //mPlayer.release();
-        //mPlayer = null;
-    }
     
     private void startRecording(String fileName) {
 
@@ -265,8 +217,6 @@ public class ChatActivity extends Activity {
 	}
 	
 	public void onSendChatMessage(View view) {
-
-		boolean hasVoiceAttachement = false;
 		
 		EditText txtMessage = (EditText)findViewById(R.id.txtMessage);
 		String strMessage = txtMessage.getText().toString();
@@ -275,10 +225,8 @@ public class ChatActivity extends Activity {
 				Toast.makeText(this, "No input was provided", Toast.LENGTH_LONG).show();
 				return;
 			}
-			else {
+			else 
 				strMessage = "Voice message";
-				hasVoiceAttachement = true;
-			}
 		}
 
 		try {
@@ -287,7 +235,6 @@ public class ChatActivity extends Activity {
 			txtMessage.setText("");
 			
 			YHMessage message = new YHMessage(0, strMessage);
-			message.setHasVoiceAttachement(hasVoiceAttachement);
 			
 			message.setUserID(myUserID);
 			addMessageToAdapte(message);

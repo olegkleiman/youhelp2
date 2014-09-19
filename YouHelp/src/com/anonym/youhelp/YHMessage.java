@@ -56,14 +56,12 @@ public class YHMessage {
 	public void setToUserId(String userid){
 		toUserID = userid;
 	}
-	
-	private boolean hasVoiceAttachement; 
-	public boolean getHasVoiceAttachement() { 
-		return hasVoiceAttachement; 
+
+	public boolean hasVoiceAttachement() { 
+		// TODO: Check type of the blob also
+		return ( blobURL == null || blobURL.isEmpty() ) ? false : true; 
 	} 
-	public void setHasVoiceAttachement(boolean flag){ 
-		hasVoiceAttachement = flag; 
-	} 
+ 
 	
 	private String blobURL;
 	public String getBlobURL() {
@@ -71,7 +69,6 @@ public class YHMessage {
 	}
 	public void setBlobURL(String url) {
 		blobURL = url;
-		hasVoiceAttachement = true;
 	}
 	
 	@Override

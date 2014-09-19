@@ -1728,6 +1728,7 @@ containing a value of this type.
         public static final int btnCustomRegistration=0x7f080063;
         public static final int btnPhoto=0x7f08005f;
         public static final int btnPlay=0x7f080059;
+        public static final int btnPlayMessage=0x7f080066;
         public static final int btnRecordMessage=0x7f080058;
         public static final int btnSend=0x7f08005e;
         public static final int btnSendChatMessage=0x7f080057;
@@ -1812,7 +1813,6 @@ containing a value of this type.
         public static final int never=0x7f08001c;
         public static final int none=0x7f080000;
         public static final int normal=0x7f080001;
-        public static final int pause=0x7f080066;
         public static final int picker_subtitle=0x7f080076;
         public static final int production=0x7f080007;
         public static final int progress_circular=0x7f08002a;

@@ -44,7 +44,7 @@ import com.microsoft.windowsazure.notifications.NotificationsManager;
 
 public class MainActivity extends FragmentActivity implements AnimationListener {
 
-	private static final String TAG = "YouHelp";
+	private static final String TAG = "youhelp";
     
 	static final int REGISTER_USER_REQUEST = 1; 
 	

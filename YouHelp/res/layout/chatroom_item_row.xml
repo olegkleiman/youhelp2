@@ -29,8 +29,13 @@
 	    android:textSize="16sp"
 	    android:textStyle="bold" />
 	
-	<ImageButton android:id="@+id/pause" 
-	            style="@android:style/MediaButton.Play" 
-	            android:contentDescription="@string/description" /> 
+	<ImageButton
+	    android:id="@+id/btnPlayMessage"
+	    style="@android:style/MediaButton.Play"
+	    android:layout_width="64dp"
+	    android:layout_height="64dp"
+	    android:contentDescription="@string/description"
+	    android:scaleType="fitXY"
+	    android:src="@drawable/sys_play_button" />
         
 </LinearLayout>

@@ -1,14 +1,19 @@
 package com.anonym.youhelp;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import com.anonym.youhelp.media.YHMediaPlayer;
 
 import android.app.Activity;
 import android.content.Context;
 import android.media.MediaPlayer;
+import android.media.MediaPlayer.OnCompletionListener;
+import android.net.Uri;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,13 +26,14 @@ import android.widget.TextView;
 
 public class ChatAdapter extends ArrayAdapter<YHMessage> {
 
+	private static final String LOG_TAG = "youhelp";
 	Context context; 
     int layoutResourceId;    
     List<YHMessage> data = new ArrayList<YHMessage>();
     String myUSerID;
     SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
-    private MediaPlayer mediaPlayer = new MediaPlayer(); 
-	
+    private YHMediaPlayer yhPlayer;
+    
 	public ChatAdapter(Context context, 
 						int layoutResourceId, 
 						List<YHMessage> data, 
@@ -39,7 +45,9 @@ public class ChatAdapter extends ArrayAdapter<YHMessage> {
 	    this.context = context;
 	    this.data = data;
 	    this.myUSerID = userID;
-    
+	    
+	    yhPlayer = new YHMediaPlayer(); 
+
 	}
 	
 	@Override
@@ -56,12 +64,16 @@ public class ChatAdapter extends ArrayAdapter<YHMessage> {
 		return this.data.get(index);
 	}
 	
-	
 	@Override
     public View getView(int position, View convertView, ViewGroup parent) {
         
 		View row = convertView;
         ChatHolder holder = null;
+        final YHMessage replica = this.getItem(position);
+        if( replica == null ) {
+        	Log.e(LOG_TAG, "Unable to get yhMessage corresponding to position " + position);
+        	return null;
+        }
         
         if(row == null)
         {
@@ -73,21 +85,21 @@ public class ChatAdapter extends ArrayAdapter<YHMessage> {
             holder.imgIcon = (ImageView)row.findViewById(R.id.imgIcon);
             holder.txtView = (TextView)row.findViewById(R.id.txtTitle);
             holder.background = (LinearLayout)row.findViewById(R.id.chatItemRowBackground);
-            holder.playButton = (ImageButton)row.findViewById(R.id.pause); 
+            holder.playButton = (ImageButton)row.findViewById(R.id.btnPlayMessage); 
         	holder.playButton.setOnClickListener(new View.OnClickListener() { 
         		   
         		@Override 
         		public void onClick(View view) { 
         		 
-        		ImageButton thisButton = (ImageButton)view; 
+        			if( replica.hasVoiceAttachement() ){
+        				
+        				String blobURL = replica.getBlobURL();
+        				Log.i(LOG_TAG, "Playing " + blobURL);
+        				Uri blogUri = Uri.parse(blobURL);
+        				
+        				yhPlayer.onPlay(context, blogUri, (ImageButton)view);
+        			}
 
-        		if( mediaPlayer != null && mediaPlayer.isPlaying() ) { 
-        			thisButton.setImageResource(android.R.drawable.ic_media_play); 
-        			mediaPlayer.stop(); 
-        		}else { 
-        			thisButton.setImageResource(android.R.drawable.ic_media_pause); 
-        			mediaPlayer.start(); 
-        		} 
         		}; 
         	}); 
             
@@ -98,9 +110,9 @@ public class ChatAdapter extends ArrayAdapter<YHMessage> {
             holder = (ChatHolder)row.getTag();
         }
         
-        YHMessage replica = this.getItem(position);
         
-    	if( replica.getHasVoiceAttachement ()) { 
+        
+    	if( replica.hasVoiceAttachement ()) { 
     		holder.playButton.setVisibility(View.VISIBLE); 
     	} 
     	else { 
@@ -139,4 +151,5 @@ public class ChatAdapter extends ArrayAdapter<YHMessage> {
         LinearLayout background;
         ImageButton playButton; 
     }
+
 }
