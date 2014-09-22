@@ -54,9 +54,9 @@
     </string-array>
 
     <string name="title_activity_chat">ChatActivity</string>
-
     <string name="photo_send_desc">photo send description</string>
-
     <string name="message_hint">Enter a message</string>
+    <string name="title_activity_nfc">NfcActivity</string>
+    <string name="nfc_explanation">Bring the device close to the NFC Tag \nor to another device.\nIf this device id Android-powered, the Android Beam should be used on those device to push NDEF message here.</string>
 
 </resources>

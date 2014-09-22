@@ -245,6 +245,17 @@ public class MainActivity extends FragmentActivity implements AnimationListener 
 			}
         });
         
+        final ImageView imageHandShake = (ImageView)findViewById(R.id.imageViewCompass);
+        imageHandShake.setOnClickListener( new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				
+				Intent intent = new Intent(MainActivity.this, NfcActivity.class);
+				startActivity(intent);
+				
+			}
+		});
         
         final ImageView imageSOS = (ImageView)findViewById(R.id.imageViewSOS);
         imageSOS.setOnClickListener(new View.OnClickListener() {
