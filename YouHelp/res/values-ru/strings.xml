@@ -3,6 +3,8 @@
     <string name="image_send_desc">отправить</string>
     
     <string name="YourPhoneNumber">Ваш номер телефона</string>
+    <string name="YourSocialID">Номер паспорта</string>
+    <string name="YourVehicleNumber">Номерной знак машины</string>
     <string name="PrimarySOSNumber">Основной номер для экстренных звонков</string>
     <string name="SecondarySOSNumber">Дополнительный номер для экстренных звонков</string>
     <string name="AllowSendPhone">Разрешить отправку этого номера с сообщениями</string>
@@ -19,5 +21,7 @@
     <string name="buttonCallMe">Позвоните мне</string> 
     
     <string name="message_hint">Введите сообщение</string>
+    <string name="emptyLPN">Пожалуйста, введите в номерной знак машины</string>
+    <string name="ride_request">Запрос на поездку</string>
 </resources>
 

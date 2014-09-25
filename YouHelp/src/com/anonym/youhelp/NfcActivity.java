@@ -1,32 +1,47 @@
 package com.anonym.youhelp;
 
-import java.util.List;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Locale;
 
-import com.anonym.youhelp.nfc.NFCUtils;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.StatusLine;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.HttpContext;
 
-
-import android.app.Activity;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
+import android.location.Location;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
 import android.nfc.NfcEvent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Parcelable;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.widget.LinearLayout;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.View;
+import android.widget.EditText;
 import android.widget.Toast;
 
-public class NfcActivity extends Activity implements NfcAdapter.OnNdefPushCompleteCallback,
+import com.anonym.youhelp.nfc.NFCUtils;
+
+public class NfcActivity extends BasicActivity implements NfcAdapter.OnNdefPushCompleteCallback,
 													 NfcAdapter.CreateNdefMessageCallback{
 
 	private NfcAdapter nfcAdapter;
 	private Handler mHandler;
 	private PendingIntent mPendingIntent;
+	final String lpnRegex = "\\(\\d{3}\\)\\d{3}\\-\\d{2}\\-\\d{2}";  
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +74,36 @@ public class NfcActivity extends Activity implements NfcAdapter.OnNdefPushComple
 			mPendingIntent = PendingIntent.getActivity(this, 0,
 	                new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
 		}
+		
+		final EditText txtLPN = (EditText)findViewById(R.id.txtLPN);
+		
+//		txtLPN.setFilters(  
+//			    new InputFilter[] {  
+//			        new PartialRegexInputFilter(regex)  
+//			    }  
+//			);  
+		
+		txtLPN.addTextChangedListener( new TextWatcher() {
+
+			@Override
+			public void afterTextChanged(Editable s) {
+				String value  = s.toString(); 
+				
+				if(value.matches(lpnRegex))  
+					txtLPN.setTextColor(Color.BLACK);  
+                else  
+                	txtLPN.setTextColor(Color.RED);  
+			}
+
+			@Override
+			public void beforeTextChanged(CharSequence s, int start,
+					int count, int after) {}
+
+			@Override
+			public void onTextChanged(CharSequence s, int start, int before,
+					int count) {}
+			
+		});
 	}
 
 	@Override
@@ -125,6 +170,37 @@ public class NfcActivity extends Activity implements NfcAdapter.OnNdefPushComple
         }
 	}
 	
+	public void onLPNSend(View v){
+		final EditText txtLPN = (EditText)findViewById(R.id.txtLPN);
+		String lpn = txtLPN.getText().toString();
+		if( lpn.isEmpty() ) {
+			String message = getResources().getString(R.string.emptyLPN);
+			Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+			return;
+		}
+		
+		Location currentLocation = getMyLocation();
+		
+		String serviceURL = getString(R.string.passenger_request_uri);
+		StringBuilder sb = new StringBuilder(serviceURL); 
+		sb.append("?lpn=");
+		sb.append(lpn);
+		
+		sb.append("&c=");
+		double lat = currentLocation.getLatitude();
+   	    double lon = currentLocation.getLongitude();
+   	 	String strCurrentLocation = String.format(Locale.US, "%.13f;%.13f", lat, lon);
+		sb.append(strCurrentLocation);
+		
+		sb.append("&p=");
+		sb.append("33333"); // Provide real ID 
+		String uri = sb.toString();
+		
+		
+		SendMessageAsyncTask sendTask = new SendMessageAsyncTask(this);
+		sendTask.execute(uri);
+	}
+	
     void buildTagViews(NdefMessage[] msgs) {
         
 //    	try {
@@ -150,5 +226,57 @@ public class NfcActivity extends Activity implements NfcAdapter.OnNdefPushComple
 //			// TODO Auto-generated catch block
 //			Log.i("montreux", e.getMessage());
 //		}
+    }
+
+    class SendMessageAsyncTask extends AsyncTask<String, String, String> {
+
+		Context context;
+		Exception error;
+    	
+		public SendMessageAsyncTask(Context ctx){
+			context = ctx;
+		}
+		
+		@Override
+	    protected void onPostExecute(String result) {
+		
+			if( error != null ) {
+				String strMessage = error.getMessage();
+				Toast.makeText(context, strMessage, Toast.LENGTH_LONG).show(); 
+			}
+		}
+    	
+		@Override
+		protected String doInBackground(String... uri) {
+
+			HttpClient httpclient = new DefaultHttpClient();
+			String responseString = null;
+
+	   	 	try{
+	   	 		
+	   	 		HttpPost httpGet = new HttpPost(uri[0]);
+	   	 		HttpContext localContext = new BasicHttpContext();
+	   	 		
+	   	 		HttpResponse response = httpclient.execute(httpGet, localContext);
+	   	 		StatusLine statusLine = response.getStatusLine();
+	   	 		
+	   	 		if(statusLine.getStatusCode() == HttpStatus.SC_OK){
+	   	 			ByteArrayOutputStream out = new ByteArrayOutputStream();
+	   	 			response.getEntity().writeTo(out);
+	   	 			out.close();
+	   	 			responseString = out.toString();
+	   	 		}else{
+	   	 			//Closes the connection.
+	   	 			response.getEntity().getContent().close();
+	   	 			throw new IOException(statusLine.getReasonPhrase());
+	   	 		}
+	   	 	}catch(Exception e){
+   	 		
+   	        	e.printStackTrace();
+   	        }
+	   	 	
+	   	 	return responseString;
+		}
+    	
     }
 }

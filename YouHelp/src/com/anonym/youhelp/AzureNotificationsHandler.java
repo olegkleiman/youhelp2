@@ -1,8 +1,10 @@
 package com.anonym.youhelp;
 
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningTaskInfo;
@@ -57,11 +59,17 @@ public class AzureNotificationsHandler extends NotificationsHandler {
 		ctx = context;
 	    String title = bundle.getString("msg");
 	    String sentUserid = bundle.getString("userid");
+	    if( sentUserid.isEmpty() ) {
+	    	Log.e(TAG, "Message received from unknown user");
+	    	return;
+	    }
 	    String blobURL = "";
 	    String coords = bundle.getString("coords");
 		String[] tokens = coords.split(";");
-		if( tokens.length != 2 ) 
+		if( tokens.length != 2 ) {
+			Log.e(TAG, "Message received with invalid coodrinates");
 			return;
+		}
 
 		SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
 		String myUserid = sharedPrefs.getString("registrationProvider", "") 
@@ -74,12 +82,29 @@ public class AzureNotificationsHandler extends NotificationsHandler {
 //				return;
 //		}
 		
-		persistMessage(context, title, sentUserid, blobURL);
-	    
-		startExternalActivity(context, tokens[0], tokens[1], title, sentUserid);
+		try {
+			String splitter = URLEncoder.encode(" ", "UTF-8"); // decode space
+			if( title.toLowerCase(Locale.US).contains( ("Ride"+splitter+"Request").toLowerCase(Locale.US) ) ) { 
+				splitter = URLEncoder.encode(":", "UTF-8"); // decode ':'
+				tokens = title.split(splitter.toLowerCase(Locale.US));
+				if( tokens.length != 2) {
+					Log.e(TAG, "Ride request received with incorrect response code");
+					return;
+				}
+				String message = context.getResources().getString(R.string.ride_request);
+				title = message + " " + tokens[1];
+			}
+			else {
+				persistMessage(context, title, sentUserid, blobURL);
+			    
+				startExternalActivity(context, tokens[0], tokens[1], title, sentUserid);
+			}
+		} catch(Exception ex) {
+			Log.e(TAG, ex.getMessage());
+		}
 		
-	    sendNotification(title);
-
+		sendNotification(title);
+		
 	}
 	
 	private void persistMessage(Context context, String content, String userid, String blobURL){

@@ -45,10 +45,8 @@ import com.facebook.UiLifecycleHelper;
 	
 	private UiLifecycleHelper uiHelper;
 	
-	EditText txtPhoneNumber;
-	
-	EditText txtSOS1;
-	EditText txtSOS2;
+	EditText txtPhoneNumber, txtSocialID, txtCarNumber;
+	EditText txtSOS1, txtSOS2;
 	
     private Session.StatusCallback callback = new Session.StatusCallback() {
         
@@ -92,6 +90,12 @@ import com.facebook.UiLifecycleHelper;
 		
 		String strPhoneNumber = txtPhoneNumber.getText().toString();
 		editor.putString("userPhoneNumber", strPhoneNumber);
+		
+		String strSocialID = txtSocialID.getText().toString();
+		editor.putString("userSocialID", strSocialID);
+		
+		String strCarNumber = txtCarNumber.getText().toString();
+		editor.putString("carNumber", strCarNumber);
 		
 		// txtSOS views can be null is 'SOS' tab was no activated
 		if( txtSOS1 != null ){
@@ -213,15 +217,22 @@ import com.facebook.UiLifecycleHelper;
 			  
 			  profilePictureView = (ImageView) view.findViewById(R.id.userProfilePicture);
 			  
-			  txtPhoneNumber = (EditText)view.findViewById(R.id.txtPhoneNumber);
-			  String strPhoneNumber = sharedPrefs.getString("userPhoneNumber", "+972");
-			  
-			  txtPhoneNumber.setText(strPhoneNumber);
-
 			  String userid = sharedPrefs.getString("userid", "");
 			  GetProfileTask task = new GetProfileTask(); 
 			  task.execute(userid); 
+			  
+			  txtPhoneNumber = (EditText)view.findViewById(R.id.txtPhoneNumber);
+			  String strPhoneNumber = sharedPrefs.getString("userPhoneNumber", "+972");
+			  txtPhoneNumber.setText(strPhoneNumber);
 
+			  txtSocialID = (EditText)view.findViewById(R.id.txtSocialID);
+			  String strSocialID = sharedPrefs.getString("userSocialID", "");
+			  txtSocialID.setText(strSocialID);
+			  
+			  txtCarNumber = (EditText)view.findViewById(R.id.txtCarNumber);
+			  String strCarNumber = sharedPrefs.getString("carNumber", "");
+			  txtCarNumber.setText(strCarNumber);
+			  
 			  return view;
 		  }
 		}

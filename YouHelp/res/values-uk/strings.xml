@@ -3,6 +3,9 @@
     <string name="image_send_desc">надіслати</string>
     
     <string name="YourPhoneNumber">Ваш номер телефону</string>
+    <string name="YourSocialID">N# паспорту</string>
+    <string name="YourVehicleNumber">Номерний знак автомобіля</string>
+    
     <string name="PrimarySOSNumber">Основний номер для екстрених дзвінків</string>
     <string name="SecondarySOSNumber">Додатковий номер для екстрених дзвінків</string>
     <string name="AllowSendPhone">Дозволити відправку цього номера з повідомленнями</string>
@@ -19,4 +22,7 @@
     <string name="buttonCallMe">Зателефонуйте мені</string> 
     
     <string name="message_hint">Введіть повідомлення</string>
+    <string name="emptyLPN">Будь ласка, введіть номерний знак транспортного засобу</string>
+    <string name="ride_request">Запит на поїздку</string>
+    
 </resources>

@@ -9,6 +9,7 @@
     <string name="permission_not_granted">Unable to perform selected action because permissions were not granted.</string>
     <string name="ok">OK</string>
     <string name="send_toast_service_url">http://youhelp.cloudapp.net/YouHelpService.svc/sendtoast</string>
+    <string name="passenger_request_uri">http://fastride.cloudapp.net/FastRideService.svc/ride</string>
     <string name="send_chatmessage_url">http://youhelp.cloudapp.net/YouHelpService.svc/sendchatmessage</string>
     <string name="title_activity_register">RegisterActivity</string>
     <string name="you_are_here">You are here</string>
@@ -32,6 +33,8 @@
     <string name="title_activity_map">MapActivity</string>
     <string name="desc_ProfilePicture">desc_ProfilePicture</string>
     <string name="YourPhoneNumber">Your Phone Number:</string>
+    <string name="YourSocialID">Your Social ID:</string>
+    <string name="YourVehicleNumber">License Plate:</string>
     <string name="PrimarySOSNumber">Primary SOS Phone Number</string>
     <string name="SecondarySOSNumber">Secondary number</string>
     <string name="AllowSendPhone">Allow on send:</string>
@@ -57,6 +60,13 @@
     <string name="photo_send_desc">photo send description</string>
     <string name="message_hint">Enter a message</string>
     <string name="title_activity_nfc">NfcActivity</string>
-    <string name="nfc_explanation">Bring the device close to the NFC Tag \nor to another device.\nIf this device id Android-powered, the Android Beam should be used on those device to push NDEF message here.</string>
+    <string name="nfc_explanation">Tap your phone to another device.</string>
+    <string name="lpn_explanation">Type in the Licence Plate Number of the vehicle you are going to share.</string>
+    <string name="lpnSend">Send</string>
+    <string name="lpnHint">xx-xxx-xx</string>
+    <string name="lpnTapToSendDescription">TapToSendDescription</string>
+    <string name="emptyLPN">Please type in License Plate Number</string>
+    <string name="title_activity_basic">BasicActivity</string>
+    <string name="ride_request">Ride request</string>
 
 </resources>

@@ -1,13 +1,65 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent" 
     android:layout_height="match_parent"
+    android:background="@color/black"
     android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/nfcdesc"
+    <TextView
+        android:id="@+id/nfcdesc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="5dp"
+        android:text="@string/lpn_explanation"
+        android:textColor="@color/white" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+
+        <EditText
+            android:id="@+id/txtLPN"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="5dp"
-            android:text="@string/nfc_explanation" >
-		</TextView>
+            android:layout_weight="2"
+            android:ems="10"
+            android:hint="@string/lpnHint"
+            android:maxLength="9"
+            android:textColor="@color/white" />
+
+        <Button
+            android:id="@+id/btnSendLPN"
+            android:onClick="onLPNSend"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:text="@string/lpnSend" />
+
+    </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
+
+        <ImageView
+            android:id="@+id/imageTapToSend"
+            android:layout_width="168dp"
+            android:layout_height="236dp"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:contentDescription="@string/lpnTapToSendDescription"
+            android:scaleType="centerCrop"
+            android:src="@drawable/tap_to_send" />
+
+        <TextView
+            android:id="@+id/lpnDesc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/imageTapToSend"
+            android:layout_alignRight="@+id/imageTapToSend"
+            android:layout_marginBottom="33dp"
+            android:text="@string/nfc_explanation" />
+
+    </RelativeLayout>
+		
 </LinearLayout>
