@@ -5,6 +5,8 @@
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     <string name="app_id">531384416976939</string>
+    <string name="wams_app_key">NDigJpIKaKpIyqpREVdgBnrxgmaZAb17</string>
+    <string name="wams_url">https://fastride.azure-mobile.net/</string>
     <string name="cancelled">Cancelled</string>
     <string name="permission_not_granted">Unable to perform selected action because permissions were not granted.</string>
     <string name="ok">OK</string>
@@ -68,5 +70,6 @@
     <string name="emptyLPN">Please type in License Plate Number</string>
     <string name="title_activity_basic">BasicActivity</string>
     <string name="ride_request">Ride request</string>
+    <string name="ride_request_accepted">Your request was accepted</string>
 
 </resources>

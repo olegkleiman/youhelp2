@@ -2,6 +2,7 @@ package com.anonym.youhelp;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.Locale;
 
 import org.apache.http.HttpResponse;
@@ -29,15 +30,25 @@ import android.os.Message;
 import android.os.Parcelable;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import com.anonym.youhelp.nfc.NFCUtils;
+import com.anonym.youhelp.dataobjects.RideRequest;
+import com.microsoft.windowsazure.mobileservices.MobileServiceAuthenticationProvider;
+import com.microsoft.windowsazure.mobileservices.MobileServiceClient;
+import com.microsoft.windowsazure.mobileservices.MobileServiceTable;
+import com.microsoft.windowsazure.mobileservices.MobileServiceUser;
+import com.microsoft.windowsazure.mobileservices.ServiceFilterResponse;
+import com.microsoft.windowsazure.mobileservices.TableOperationCallback;
+import com.microsoft.windowsazure.mobileservices.UserAuthenticationCallback;
 
 public class NfcActivity extends BasicActivity implements NfcAdapter.OnNdefPushCompleteCallback,
 													 NfcAdapter.CreateNdefMessageCallback{
 
+	private static final String TAG = "youhelp";
 	private NfcAdapter nfcAdapter;
 	private Handler mHandler;
 	private PendingIntent mPendingIntent;
@@ -170,35 +181,98 @@ public class NfcActivity extends BasicActivity implements NfcAdapter.OnNdefPushC
         }
 	}
 	
+	private MobileServiceClient mClient;
+	private MobileServiceTable<RideRequest> mRideRequestsTable;
+	
 	public void onLPNSend(View v){
 		final EditText txtLPN = (EditText)findViewById(R.id.txtLPN);
-		String lpn = txtLPN.getText().toString();
-		if( lpn.isEmpty() ) {
+		final String carNumber = txtLPN.getText().toString();
+		if( carNumber.isEmpty() ) {
 			String message = getResources().getString(R.string.emptyLPN);
 			Toast.makeText(this, message, Toast.LENGTH_LONG).show();
 			return;
 		}
 		
-		Location currentLocation = getMyLocation();
+		final Location currentLocation = getMyLocation();
 		
-		String serviceURL = getString(R.string.passenger_request_uri);
-		StringBuilder sb = new StringBuilder(serviceURL); 
-		sb.append("?lpn=");
-		sb.append(lpn);
+		try {
+			
+			mClient = new MobileServiceClient(
+					getResources().getString(R.string.wams_url),
+					getResources().getString(R.string.wams_app_key),
+					this);
+			
+			mClient.login(MobileServiceAuthenticationProvider.Facebook, new UserAuthenticationCallback(){
+
+				private void wamsExceptionHandle(Exception exception){
+					String message = ( exception.getCause() != null ) ? 
+							exception.getCause().getLocalizedMessage()
+							: exception.getLocalizedMessage();
+					Log.e(TAG, message);
+					Toast.makeText(NfcActivity.this, message, Toast.LENGTH_LONG).show();
+				}
+				
+				@Override
+				public void onCompleted(MobileServiceUser user, 
+						Exception exception,
+						ServiceFilterResponse response) {
+							if( exception == null ) {
+								
+								String msg = String.format("You are how logged in - %1$2s", user.getUserId());
+								Log.i(TAG, msg);
+								
+								mRideRequestsTable = mClient.getTable(RideRequest.class);
+								
+								RideRequest item = new RideRequest();
+								item.setCarNumber(carNumber);
+								item.setLatitude(currentLocation.getLatitude());
+								item.setLongitude(currentLocation.getLongitude());
+								item.setComplete(false);
+								
+								mRideRequestsTable.insert(item, new TableOperationCallback<RideRequest>() {
+									
+									@Override
+									public void onCompleted(RideRequest entity, 
+															Exception exception, 
+															ServiceFilterResponse response) {
+										if (exception == null) {
+											String message = getResources().getString(R.string.ride_request_accepted);
+											Toast.makeText(NfcActivity.this, message, Toast.LENGTH_LONG).show();
+											finish();
+										}
+										else {
+											wamsExceptionHandle(exception);
+										}
+									}
+								});
+							}
+							else {
+								wamsExceptionHandle(exception);
+							}
+						}
+			});
+		} catch (Exception e) {
+			Log.e(TAG, e.getMessage());
+		}
+
 		
-		sb.append("&c=");
-		double lat = currentLocation.getLatitude();
-   	    double lon = currentLocation.getLongitude();
-   	 	String strCurrentLocation = String.format(Locale.US, "%.13f;%.13f", lat, lon);
-		sb.append(strCurrentLocation);
-		
-		sb.append("&p=");
-		sb.append("33333"); // Provide real ID 
-		String uri = sb.toString();
-		
-		
-		SendMessageAsyncTask sendTask = new SendMessageAsyncTask(this);
-		sendTask.execute(uri);
+//		String serviceURL = getString(R.string.passenger_request_uri);
+//		StringBuilder sb = new StringBuilder(serviceURL); 
+//		sb.append("?lpn=");
+//		sb.append(lpn);
+//		
+//		sb.append("&c=");
+//		double lat = currentLocation.getLatitude();
+//   	    double lon = currentLocation.getLongitude();
+//   	 	String strCurrentLocation = String.format(Locale.US, "%.13f;%.13f", lat, lon);
+//		sb.append(strCurrentLocation);
+//		
+//		sb.append("&p=");
+//		sb.append("33333"); // Provide real ID 
+//		String uri = sb.toString();
+//		
+//		SendMessageAsyncTask sendTask = new SendMessageAsyncTask(this);
+//		sendTask.execute(uri);
 	}
 	
     void buildTagViews(NdefMessage[] msgs) {

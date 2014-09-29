@@ -24,5 +24,6 @@
     <string name="message_hint">Введіть повідомлення</string>
     <string name="emptyLPN">Будь ласка, введіть номерний знак транспортного засобу</string>
     <string name="ride_request">Запит на поїздку</string>
+    <string name="ride_request_accepted">Ваш запит був прийнятий</string>
     
 </resources>

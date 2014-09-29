@@ -83,7 +83,7 @@
             android:label="@string/title_activity_chat"
             android:screenOrientation="portrait" >
         </activity>
-        <activity android:name=".NfcActivity" >
+        <activity android:name=".NfcActivity" android:noHistory="true">
             <intent-filter>
                 <action android:name="android.nfc.action.TECH_DISCOVERED" />
             </intent-filter>
