@@ -97,6 +97,7 @@ public class ChatActivity extends Activity {
 		yhPlayer = new YHMediaPlayer();
 		
 		ImageButton btnRecordMessage = (ImageButton)findViewById(R.id.btnRecordMessage);
+		
 		btnRecordMessage.setOnClickListener(new View.OnClickListener() {
 			
 			@Override
